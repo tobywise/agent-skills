@@ -38,7 +38,7 @@ you will need `findutils` and a `bash` newer than the system 3.2.
 ## Quick start
 
 ```sh
-git clone <this-repo> agent-skills
+git clone https://github.com/tobywise/agent-skills.git
 cd agent-skills
 bash scripts/install.sh
 ```
