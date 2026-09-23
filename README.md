@@ -207,7 +207,16 @@ skills/run-checks/SKILL.md               detect the runner; local rules; rules f
 skills/run-checks/references/crabbox.md  the Crabbox rules, read only if cbrun exists
 ```
 
-The first time a session needs to run a check, it runs `command -v cbrun`:
+The first time a session needs to run a check, it first looks at the project's
+own agent instructions (`AGENTS.md` or `CLAUDE.md`). If they name a runner,
+that wins. To make one repository run its checks locally even on a Crabbox
+machine, add a line like this to that file:
+
+```md
+Checks in this repository run locally, even where Crabbox is available.
+```
+
+Otherwise it runs `command -v cbrun`:
 
 - **Not found:** checks run locally in the project's locked environment
   (`uv run --locked`, `make`, …). Locked setup is allowed; adding or upgrading
@@ -218,8 +227,8 @@ The first time a session needs to run a check, it runs `command -v cbrun`:
 
 The policy carries two always-on lines for this: *load `run-checks` before
 running anything expensive*, and a backstop, *if `cbrun` is on `PATH`, never
-run those commands directly on this machine*. The backstop does nothing on
-machines without Crabbox. The Crabbox detail (~100 lines) is only in context
+run those commands directly on this machine*, unless the project says its checks
+run locally. The backstop does nothing on machines without Crabbox. The Crabbox detail (~100 lines) is only in context
 when it's actually used.
 
 Plans and skills refer to the runner generically. A plan's `RUNNER` field names

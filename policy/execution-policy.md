@@ -3,7 +3,7 @@
 ## Running checks
 
 - Before running any test suite, build, type check, dependency install, migration, Docker build, or other expensive command, load the `run-checks` skill and follow it. It decides whether checks run locally or on remote workers.
-- If `cbrun` is on `PATH`, this machine is a controller for remote workers: never run those commands directly on it.
+- If `cbrun` is on `PATH`, this machine is a controller for remote workers: never run those commands directly on it, unless the project's agent instructions say its checks run locally.
 - Do not install or synchronize dependencies during an implementation pass, except the project-locked setup that `run-checks` allows.
 
 ## Pull requests

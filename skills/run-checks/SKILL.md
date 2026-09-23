@@ -7,13 +7,20 @@ description: How to run tests, builds, type checks, installs, and other verifica
 
 ## Choose the runner
 
-Run `command -v cbrun` once per session, before the first check.
+Decide once per session, before the first check:
 
-- **Found:** this machine is a controller for remote Crabbox workers. Read
-  `references/crabbox.md` in this skill's directory
-  (`~/.agents/skills/run-checks/references/crabbox.md`) and follow it as well
-  as the rules below. Never run the commands above directly on this machine.
-- **Not found:** run checks locally, as described below.
+1. **The project says.** If the project's agent instructions (`AGENTS.md` or
+   `CLAUDE.md`) name a runner — for example "checks in this repository run
+   locally" — use it.
+2. **Otherwise, detect.** Run `command -v cbrun`.
+   - **Found:** this machine is a controller for remote Crabbox workers. Read
+     `references/crabbox.md` in this skill's directory
+     (`~/.agents/skills/run-checks/references/crabbox.md`) and follow it as
+     well as the rules below. Never run tests, builds, type checks, installs,
+     or other expensive commands directly on this machine.
+   - **Not found:** run checks locally, as described below.
+
+State which runner you chose and why in your first report of a check.
 
 ## Local runner
 
