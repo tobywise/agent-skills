@@ -36,6 +36,7 @@ Codex. Agents also load skills themselves when a task matches.
 | Plan and build | |
 |---|---|
 | `grill-me` | Interview you about a design until it's pinned down |
+| `plan-quiz` | Explore plan decisions in an interactive HTML questionnaire |
 | `create-plan` | Write an implementation-ready plan, or a revised copy of one |
 | `create-multiple-plans` | Split large work into ordered, independently useful plans |
 | `orchestrate` | Carry a plan through implement → review → verify from the main session |
