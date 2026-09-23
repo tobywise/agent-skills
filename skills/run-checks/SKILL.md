@@ -25,8 +25,9 @@ State which runner you chose and why in your first report of a check.
 ## Local runner
 
 - Run checks in the project's own locked environment, through its declared
-  entrypoints: `uv run` for a uv project, the project's `make` targets or
-  scripts, and so on. Respect `.python-version` and `requires-python`.
+  entrypoints: `uv run --locked` for a uv project (plain `uv run` can rewrite
+  `uv.lock`), the project's `make` targets or scripts, and so on. Respect
+  `.python-version` and `requires-python`.
 - Project-locked setup is allowed, such as `uv sync --locked`. Never add,
   upgrade, or install unlocked dependencies to make a check pass.
 - Keep checks bounded. Stop and ask the user to run an intensive scientific
