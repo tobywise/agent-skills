@@ -1,6 +1,6 @@
 ---
 name: code-implementer
-description: Implements a plan with the smallest correct change. Runs no tests or remote checks; reports what is unverified.
+description: Implements a plan with the smallest correct change. Runs no tests or checks; reports what is unverified.
 model: sonnet
 effort: high
 ---

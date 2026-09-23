@@ -1,6 +1,6 @@
 ---
 name: implement-direct
-description: Implement an existing plan file directly in the current session, without running tests or remote checks. Use when the user asks to implement a plan, or invokes /implement-direct.
+description: Implement an existing plan file directly in the current session, without running tests or checks. Use when the user asks to implement a plan, or invokes /implement-direct.
 ---
 
 # Implement direct
@@ -42,9 +42,8 @@ opportunistically, or layer over a structural problem.
 
 ## No execution
 
-Don't run tests, linters through a remote runner, the plan's
-`IMPLEMENTATION_CHECKS` or `FINAL_SUITE`, or anything on Crabbox
-(`cbrun`/`cbrun-uv`) or another remote machine — even if the plan says to.
+Don't run tests, the plan's `IMPLEMENTATION_CHECKS` or `FINAL_SUITE`, or any
+other check, locally or on a remote runner — even if the plan says to.
 Leave all of it unexecuted. The user verifies the work by hand.
 
 ## Report
@@ -53,7 +52,7 @@ Report:
 
 - what changed, by path;
 - which acceptance items you implemented;
-- everything the plan expected tests or remote checks to confirm, marked
+- everything the plan expected tests or checks to confirm, marked
   **unverified**, with the exact command that would check it;
 - untouched `INTERPRETATION` and `DEFERRED` items;
 - any concerns about the plan, and anything you stopped on.

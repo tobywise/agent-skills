@@ -50,15 +50,15 @@ Never edit, rename, replace, or delete an existing plan; to change one, see
 ## Tests and verification
 
 The implementer writes the tests but never runs them. The main session runs
-these commands after review, under the global execution policy.
+these commands after review, following the `run-checks` skill.
 
 ```text
-RUNNER: <how commands run, e.g. cbrun-uv for a uv-locked Python project>
+RUNNER: <how commands run, per run-checks: e.g. `uv run` locally, or cbrun-uv on Crabbox>
 REQUIRED_INPUTS: <data, credentials, or services the checks need, or none>
 DEFERRED_INPUTS: <inputs deliberately left out of these checks, or none>
 IMPLEMENTATION_CHECKS: <one exact command: cheap, targeted checks first>
 FINAL_SUITE: <one exact command for the full suite>
-REMOTE_BUDGET: <expected remote calls, with a one-line justification>
+RUN_BUDGET: <expected number of check invocations, with a one-line justification>
 ```
 
 - Every command is exact and complete. Its coverage must be reviewable from the
@@ -69,6 +69,8 @@ REMOTE_BUDGET: <expected remote calls, with a one-line justification>
   `ONE_CALL` plan declares `FINAL_SUITE: REUSE_IMPLEMENTATION_CHECK` instead.
 - Static checks and source inspection cannot prove executable behaviour.
 - Name the project's locked linter and formatter where they apply.
+- Older plans may say `REMOTE_BUDGET` and `Remote validation`; they mean
+  `RUN_BUDGET` and `Validation`.
 
 ## Complexity budget
 
@@ -99,7 +101,7 @@ hard is exact.
 
 Under `SCIENTIFIC_ANALYSIS`, also:
 
-- declare `Delivery profile` and `Remote validation` as defined in
+- declare `Delivery profile` and `Validation` as defined in
   `scientific-analysis`;
 - tier every acceptance item `IMPLEMENTATION`, `INTERPRETATION`, or
   `DEFERRED`. Vague adequacy goals are `INTERPRETATION` and stay out of failing

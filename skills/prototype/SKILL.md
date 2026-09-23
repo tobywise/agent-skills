@@ -37,8 +37,9 @@ choice would change the meaning of the result.
 
 Before editing, state a compact inline brief with `OBJECTIVE`, `INPUTS`,
 `TRANSFORMATIONS`, `ANALYSES`, `VALIDITY`, `OUTPUTS`, and `ALLOWED_PATHS`. Then
-**always ask the user to choose execution for this run**: bounded Crabbox now,
-an exact user/HPC handoff, or implementation without execution. Recommend one
+**always ask the user to choose execution for this run**: run it now with
+this machine's runner (see `run-checks`), an exact handoff for the user to run
+elsewhere (such as HPC), or implementation without execution. Recommend one
 from the runtime and artifact needs you inspected.
 
 ## Implementation and execution
@@ -49,9 +50,8 @@ validation, broad documentation, Python docstrings, compatibility behavior,
 production hardening, and unrelated cleanup are not required unless the user
 asks for them or the analysis needs them to run correctly. Normal
 application paths and dependency declarations are allowed when needed, but
-disclose them. Never install or synchronize dependencies on the controller or
-perform ad hoc or unlocked setup; project-locked setup performed by `cbrun-uv`
-on a disposable worker is allowed. Never migrate data or schemas, deploy, or
+disclose them. Never perform ad hoc or unlocked dependency setup;
+project-locked setup that `run-checks` allows is fine. Never migrate data or schemas, deploy, or
 mutate external systems.
 
 Stay strict about data identity and coding, equations, likelihoods and
@@ -62,8 +62,8 @@ or incomplete candidate set must raise or exit nonzero. Never catch-and-warn,
 skip, substitute a method, or present partial output as success.
 
 Inspect the completed diff and self-audit the scientific path before execution.
-For bounded execution, use the project runner and at most two top-level `cbrun`
-or `cbrun-uv` calls. The first runs the actual end-to-end analysis, not a
+To run it now, follow `run-checks` and use at most two top-level run
+invocations. The first runs the actual end-to-end analysis, not a
 unit-test suite; that run is the verification, and must exercise the supported
 input, transformations, computation, validity checks, and outputs, and report
 its runtime identity. Source inspection or a static check cannot establish
@@ -73,8 +73,8 @@ unchanged work, or retry an infrastructure failure as though it were a
 computation failure.
 
 The run must emit a bounded result and diagnostic summary and export required
-artifacts before exiting. Treat worker-only files as lost. For user/HPC
-execution, return the exact command, runtime assumptions, and expected
+artifacts before exiting. On a remote runner, treat worker-only files as lost.
+For a handoff, return the exact command, runtime assumptions, and expected
 artifacts, and don't claim computation success until the user makes the results
 available. Implementation-only work is explicitly `NOT_RUN`.
 
@@ -100,7 +100,7 @@ failure.
 Finish with:
 
 ```text
-PROTOTYPE_STATUS: COMPLETE | BLOCKED | AWAITING_HPC | NOT_RUN
+PROTOTYPE_STATUS: COMPLETE | BLOCKED | AWAITING_HANDOFF | NOT_RUN
 EXECUTION_MODE:
 COMPUTATION_STATUS: VALID | FAILED | NOT_RUN
 RESULTS:

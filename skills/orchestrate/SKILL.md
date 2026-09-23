@@ -24,8 +24,8 @@ unclear.
 4. **Settle disputed findings.** If the review raises blockers or risk
    candidates you or the user doubt, ask the `scientific-risk-reviewer` agent
    for a second opinion before acting on them.
-5. **Verify.** Run the plan's `IMPLEMENTATION_CHECKS` yourself, under the
-   global execution policy.
+5. **Verify.** Run the plan's `IMPLEMENTATION_CHECKS` yourself, following the
+   `run-checks` skill.
 6. **Fix and re-review.** For `REQUEST_CHANGES` or a failing check, send the
    specific findings or failure back to the implementer, then re-review with
    the previous review supplied, so the reviewer checks only what changed.
@@ -43,8 +43,8 @@ in this session instead: `implement-direct`, `review-implementation`, or
   approval.
 - The user would have to accept a blocker rather than fix it. Get a
   `scientific-risk-reviewer` acceptance review first, then let the user decide.
-- A check can't run within the execution policy, such as an intensive
-  scientific analysis that belongs on HPC.
+- A check can't run within `run-checks`' limits, such as an intensive
+  scientific analysis that has to be handed to the user.
 - The same finding survives two fix rounds, or three rounds pass without
   approval. Summarise what keeps failing rather than looping further.
 - A scientific plan and its revisions reach four distinct blocking findings,
@@ -53,14 +53,14 @@ in this session instead: `implement-direct`, `review-implementation`, or
 
 ## Verification runs
 
-- Batch related targeted checks into one remote invocation when they can run
+- Batch related targeted checks into one invocation when they can run
   sequentially.
 - Defer the full suite until the code is stable after review.
 - Run the full suite successfully at most once for the same code; don't rerun
   a suite that already passed.
 - Never rerun an unchanged failure; rerun only after a relevant code change.
 - Reuse an earlier result only when it recorded the exact command, exit
-  status, and worker outcome for the same, unchanged code.
+  status, and runner outcome for the same, unchanged code.
 
 ## Ground rules
 

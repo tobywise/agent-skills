@@ -14,7 +14,7 @@ Every scientific plan declares:
 
 ```text
 Delivery profile: SINGLE_USE | REUSABLE
-Remote validation: ONE_CALL | STANDARD
+Validation: ONE_CALL | STANDARD
 ```
 
 Default to `SINGLE_USE`. Use `REUSABLE` only when the user or an existing
@@ -40,7 +40,7 @@ failures, and scientific validity.
 
 Use these as review tripwires, not quotas: six changed implementation or test
 files, two executable feature surfaces, one entrypoint, about 400 production
-additions, 500 test additions, and one comprehensive remote command. Treat
+additions, 500 test additions, and one comprehensive check command. Treat
 these figures as expected values. An excess alone is non-blocking and does not
 require approval, a `REUSABLE` profile, or a split. Only a limit explicitly
 identified as hard by the user or an external authority is exact; otherwise
@@ -80,7 +80,7 @@ FINAL_SUITE: REUSE_IMPLEMENTATION_CHECK
 Use `STANDARD` for `REUSABLE` work or whenever one comprehensive call cannot
 provide credible proof; it keeps separate `IMPLEMENTATION_CHECKS` and
 `FINAL_SUITE` commands. Documentation-only or configuration-only work may
-explicitly justify no remote call when executable behavior is unchanged.
+explicitly justify running no check when executable behavior is unchanged.
 
 ## Rapid Prototype Workflow
 

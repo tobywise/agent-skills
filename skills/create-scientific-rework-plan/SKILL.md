@@ -29,7 +29,7 @@ consumer or operational intent cannot be established from the repository or
 conversation.
 
 When the codebase qualifies, target `Delivery profile: SINGLE_USE`. Default to
-`Remote validation: ONE_CALL`; use `STANDARD` only when one comprehensive
+`Validation: ONE_CALL`; use `STANDARD` only when one comprehensive
 command cannot credibly prove all implementation acceptance items and relevant
 regressions.
 

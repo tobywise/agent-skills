@@ -122,37 +122,33 @@ instructions (e.g. `claude -p "…"`, `opencode run "…"`).
 | `grill-me` | Interview the user about a design until shared understanding | — |
 | `slide-deck` | Navigable HTML slide deck | — |
 | `planning` | The shared plan format: sections, verification fields, budgets, splitting, revisions | — |
-| `create-plan` | Write one plan (or a revised copy) in the `planning` format | see note |
+| `create-plan` | Write one plan (or a revised copy) in the `planning` format | — |
 | `create-multiple-plans` | Ordered plans for independently useful vertical slices | — |
 | `create-scientific-rework-plan` | Audit a scientific codebase, plan a single-use rework | — |
-| `implement-direct` | Implement a plan in-session without running tests or checks | see note |
+| `implement-direct` | Implement a plan in-session without running tests or checks | — |
 | `orchestrate` | Guide for the main session to carry a plan through implement → review → verify | — |
 | `langsmith-review` | Read-only LangSmith trace review through the bundled helper | LangSmith, Paseo |
 | `debrief` | Evidence-based LangSmith debrief or postmortem | LangSmith, Paseo |
 | `review-implementation` | Read-only review of an implementation against its plan, with scientific tiers | — |
 | `scientific-risk-review` | Second opinion on whether a finding should block, or could be accepted | — |
-| `prototype` | One rapid, exploratory, single-use scientific analysis prototype | Crabbox for execution |
+| `prototype` | One rapid, exploratory, single-use scientific analysis prototype | — |
+| `run-checks` | How tests, builds and other checks run on this machine: locally, or on Crabbox workers if present | — |
 
-**Not everything here is generic.** Five skills assume infrastructure you
+**Not everything here is generic.** Two skills assume infrastructure you
 probably do not have:
 
 - `langsmith-review` and `debrief` query [LangSmith](https://smith.langchain.com)
   for traces emitted by OpenCode and Paseo sessions. They need `LANGSMITH_API_KEY`
   in the environment and are useless without that stack. Delete them if you do
   not use it.
-- `planning` and `implement-direct` refer to **Crabbox** (`cbrun`/`cbrun-uv`),
-  a private wrapper that runs bounded checks on disposable remote workers.
-  `planning` uses it as an example `RUNNER`;
-  `implement-direct` forbids running anything through it. Both still work if you
-  delete those references — the rest of each skill is generic.
-- `prototype` offers to execute the analysis on Crabbox. It always asks first,
-  and the other two options — an HPC handoff or no execution — need nothing.
+
+Remote workers are handled differently: see [Running checks](#running-checks).
 
 `scientific-analysis` has a different kind of dependency. It opens by saying it
 "supplements the global scientific fail-fast policy". That policy isn't a skill:
 it's always-on instructions, because it must apply to all scientific work, not
-only when a skill happens to load. It ships in Part 1 of
-`policy/execution-policy.md` and is installed with `--with-policy`. Without it you get the proportionality
+only when a skill happens to load. It ships in `policy/execution-policy.md`
+and is installed with `--with-policy`. Without it you get the proportionality
 half of the style (`SINGLE_USE`, `ONE_CALL`, proportionate proof) but not the
 strictness half: fail at first detection, never catch-and-warn, never substitute
 a model to get past a failure.
@@ -169,14 +165,10 @@ they work together; the terms are defined in `planning` itself.
 
 `policy/execution-policy.md` is one set of always-on instructions shared by all
 three platforms. It's written without platform-specific tool names, so the same
-text works everywhere. It has two parts:
-
-- **Part 1: General and scientific rules** — PR descriptions, Python
-  conventions, the scientific fail-fast rule, the prototype exception, and what
-  "complete" means. These apply on any machine.
-- **Part 2: This machine** — a controller that edits but doesn't run expensive
-  checks, and Crabbox workers (`cbrun`/`cbrun-uv`) that do. If you don't have
-  Crabbox, delete Part 2 in your fork.
+text works everywhere. It covers PR descriptions, Python conventions, the
+scientific fail-fast rule, the prototype exception, what "complete" means, and
+one pointer: load `run-checks` before running anything expensive. Nothing in it
+is machine-specific.
 
 It's opt-in, because it is one person's working rules rather than a generic
 default:
@@ -200,6 +192,42 @@ the policy twice.
 When editing the policy, keep it platform-neutral: say "the shell tool", "load
 the skill", "the project's own agent configuration" — never a specific tool name
 like `Bash` or a path like `.codex/config.toml`.
+
+## Running checks
+
+Where tests and builds should run differs between machines. On the author's
+machines, the machine you work on is a *controller* that edits code and sends
+checks to disposable cloud workers through **Crabbox** (`cbrun`/`cbrun-uv`), a
+private wrapper. Most people just run checks locally.
+
+The `run-checks` skill handles both, so nothing needs configuring:
+
+```
+skills/run-checks/SKILL.md               detect the runner; local rules; rules for both
+skills/run-checks/references/crabbox.md  the Crabbox rules, read only if cbrun exists
+```
+
+The first time a session needs to run a check, it runs `command -v cbrun`:
+
+- **Not found:** checks run locally in the project's locked environment
+  (`uv run --locked`, `make`, …). Locked setup is allowed; adding or upgrading
+  dependencies to make a check pass is not. Intensive scientific analyses are
+  handed to you with the exact command.
+- **Found:** the session reads `references/crabbox.md` and runs checks only on
+  workers, never on the controller itself.
+
+The policy carries two always-on lines for this: *load `run-checks` before
+running anything expensive*, and a backstop, *if `cbrun` is on `PATH`, never
+run those commands directly on this machine*. The backstop does nothing on
+machines without Crabbox. The Crabbox detail (~100 lines) is only in context
+when it's actually used.
+
+Plans and skills refer to the runner generically. A plan's `RUNNER` field names
+whatever `run-checks` chose, and `prototype` asks whether to run now with this
+machine's runner, hand the run to you, or not run it.
+
+To support another remote system, add `references/<system>.md` and a detection
+branch to `run-checks`.
 
 ## Agents
 
