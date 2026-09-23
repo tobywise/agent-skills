@@ -69,7 +69,7 @@ Do not use several separate one-shot commands for related checks. Batch them int
 
 ## R quick checks
 
-- Use the digest-pinned image in `images/r-quick/image.lock` for bounded R tests that declare compatibility with the standard package set.
+- Use the digest-pinned image in `~/projects/crabbox-setup/images/r-quick/image.lock` for bounded R tests that declare compatibility with the standard package set.
 - Run the cached image with `sudo docker run --pull=never`; do not build images or run source-heavy `renv::restore()` on Crabbox.
 - Mount the synced checkout at `/work` rather than copying project source into the image.
 - A missing package or incompatible R version requires a newly published image or an HPC handoff, not package compilation during the Crabbox lease.
