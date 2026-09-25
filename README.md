@@ -91,9 +91,9 @@ implementer follows the plan directly; the other agents load their skills.
 ## Always-on policy (optional)
 
 `--with-policy` installs [`policy/execution-policy.md`](policy/execution-policy.md)
-as every platform's global instructions. It covers PR descriptions, Python
-conventions, a strict fail-fast rule for scientific computations, and when work
-counts as complete. `scientific-analysis` relies on its fail-fast rule.
+as every platform's global instructions. It covers plain language, PR
+descriptions, Python conventions, a strict fail-fast rule for scientific
+computations, and when work counts as complete. `scientific-analysis` relies on its fail-fast rule.
 
 It's opt-in because it's one person's working rules. The installer won't
 overwrite an existing global `AGENTS.md`; for Claude Code it adds one import

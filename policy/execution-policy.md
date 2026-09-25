@@ -12,6 +12,12 @@
 - Load that skill and apply it directly in the current session. Do not delegate it to a subagent or treat it as a separate command a user has to invoke.
 - This applies whenever a PR is being opened or its description written, in any project, not only when the user explicitly asks for a PR description.
 
+## Plain language
+
+- Readers are scientists, not software engineers. Write everything a person reads in plain English (ISO 24495-1): docs, comments, docstrings, messages, and the names of functions, variables, and files.
+- Scientific terms are fine; software-engineering jargon is not. Say what the code does, and name things after what they mean in the analysis, not after software patterns (for example, "participant data", not "data manager"). Follow the project's existing naming style.
+- Apply this to new or changed text; do not rename existing public names unless asked.
+
 ## Browser automation
 
 - Use Playwright only for web UI development or testing. It must be explicitly enabled by the web project's own agent configuration.
