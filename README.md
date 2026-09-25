@@ -40,7 +40,6 @@ Codex. Agents also load skills themselves when a task matches.
 | `create-plan` | Write an implementation-ready plan, or a revised copy of one |
 | `create-multiple-plans` | Split large work into ordered, independently useful plans |
 | `orchestrate` | Carry a plan through implement → review → verify from the main session |
-| `implement-direct` | Implement a plan with the smallest correct change, running nothing |
 | `run-checks` | Run tests and builds locally, or on remote workers where they exist |
 
 | Review | |
@@ -74,17 +73,17 @@ flowchart LR
     E -- approved --> F["run-checks"]
 ```
 
-Each step also works on its own: implement a plan with `/implement-direct`, or
-review one with `/review-implementation`.
+You can also review a plan's implementation on its own with
+`/review-implementation`.
 
 ## Agents
 
-Agents have their own model and permissions, so you can delegate to them. Each
-is a thin wrapper that loads one skill.
+Agents have their own model and permissions, so you can delegate to them. The
+implementer follows the plan directly; the other agents load their skills.
 
 | Agent | Runs | Access |
 |---|---|---|
-| `code-implementer` | `implement-direct` | Edits code, runs nothing |
+| `code-implementer` | The supplied plan | Edits code and writes tests, runs nothing |
 | `code-reviewer` | `review-implementation` | Read-only (on Claude Code it keeps a shell for `git diff`) |
 | `scientific-risk-reviewer` | `scientific-risk-review` | Read-only, no shell |
 | `code-prototype` | `prototype` | Unrestricted. It asks you questions, so start it as the session (`claude --agent code-prototype`, or `/prototype` in OpenCode) rather than delegating to it. There's no Codex version; use the skill there. |
