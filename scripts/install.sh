@@ -94,8 +94,8 @@ fi
 
 # --- Agents -----------------------------------------------------------------
 # Agents are not part of the Agent Skills standard: each platform has its own
-# format. So each agent is one directory holding a thin file per platform —
-# model and permissions only — whose instructions just load a shared skill.
+# format. Each agent has one directory with a file per platform. Most load a
+# shared skill; the code-implementer follows the supplied plan directly.
 #
 #   agents/<name>/claude.md   -> ~/.claude/agents/<name>.md
 #   agents/<name>/opencode.md -> ~/.config/opencode/agents/<name>.md

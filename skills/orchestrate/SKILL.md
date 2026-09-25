@@ -17,8 +17,8 @@ unclear.
 1. **Read the plan** and `git status --short`. Confirm the plan exists, is
    readable, and doesn't conflict with unrelated uncommitted work.
 2. **Implement.** Delegate to the `code-implementer` agent with the plan path,
-   or use the `implement-direct` skill yourself for small plans. It edits code
-   and writes tests but runs nothing.
+   or implement a small plan yourself. The implementer edits code and writes
+   tests but runs nothing; the main session owns verification.
 3. **Review.** Delegate to the `code-reviewer` agent with the plan path. It is
    read-only and returns `APPROVE`, `REQUEST_CHANGES`, or `ESCALATE`.
 4. **Settle disputed findings.** If the review raises blockers or risk
@@ -32,9 +32,8 @@ unclear.
 7. **Finish.** Once review approves and checks pass, run `FINAL_SUITE` once
    (or skip it when the plan says `REUSE_IMPLEMENTATION_CHECK`) and report.
 
-If an agent isn't available on this platform, load its skill and do the step
-in this session instead: `implement-direct`, `review-implementation`, or
-`scientific-risk-review`.
+If an agent isn't available on this platform, do implementation yourself or
+load `review-implementation` or `scientific-risk-review` for those steps.
 
 ## When to stop and ask the user
 
