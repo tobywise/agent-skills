@@ -1,6 +1,6 @@
 ---
 name: scientific-risk-review
-description: Independently judge whether proposed blockers or possible scientific risks should really block, and whether a blocker is something the user could reasonably accept. Use after a review raises blockers or risk candidates, or when asked for a second opinion on a finding.
+description: Independently rate the severity and likelihood of proposed blockers or possible scientific risks, judge whether they should block, and whether a blocker is acceptable. Use after a review raises blockers or risk candidates, or when asked for a second opinion on a finding.
 ---
 
 # Scientific risk review
@@ -12,8 +12,11 @@ Load `scientific-analysis` for any scientific assessment; don't load it for
 `GENERAL` work.
 
 Inspect the plan and repository evidence yourself. Don't rely on the original
-reviewer's chance, impact, or proposed fix. Judge the supported use and access
-described by the plan, repository, and user, not a generic security standard.
+reviewer's ratings or proposed fix. Apply the shared
+[review ratings](../review-implementation/references/ratings.md) independently to every
+assessment, with a short reason for severity and likelihood. Judge the
+supported use and access described by the plan, repository, and user, not a
+generic security standard.
 The burden of proof is on a decision to block or to refuse acceptance.
 
 Pick the mode from what you are given. Assess every supplied item in one pass.
@@ -42,6 +45,9 @@ BLOCKER_ASSESSMENTS:
   SOURCE: PROPOSED | DISCOVERED
   DECISION: CONFIRM_BLOCKING | DOWNGRADE_NON_BLOCKING | DISMISS | CONTRACT_REASSESSMENT
   TYPE: DEFECT | DESIGN | SCOPE | PLAN_GAP | TEST_ORACLE
+  SEVERITY: 1 MINOR | 2 MODERATE | 3 MAJOR | 4 CRITICAL | UNKNOWN
+  LIKELIHOOD: 1 REMOTE | 2 POSSIBLE | 3 LIKELY | 4 OBSERVED | UNKNOWN
+  RATING_REASON: <consequence and trigger; missing fact if UNKNOWN>
   SUPPORTED_PATH:
   PRACTICAL_CONSEQUENCE:
   EVIDENCE:
@@ -58,11 +64,11 @@ happen in normal use; whether it changes the scientific calculation or only
 labels and records; existing safeguards; whether the problem would be noticed;
 and whether it can be corrected.
 
-- `BLOCKING` only for a `REALISTIC` and `SERIOUS` risk, or a `SERIOUS` risk
-  where an explicit authority requires protection against a less likely case.
-- `NON_BLOCKING` for a concrete residual risk below that threshold. A `LIMITED`
-  risk is always non-blocking.
-- `DISMISS` for `MINOR` impact, or outside normal use without an explicit
+- `BLOCKING` only for severity 3 or 4 with likelihood 3 or 4, or severity 3 or
+  4 with likelihood 2 where an explicit authority requires protection.
+- `NON_BLOCKING` for a concrete residual risk below that threshold. A severity
+  2 risk is normally non-blocking unless it violates an explicit requirement.
+- `DISMISS` for severity 1, or likelihood 1 without an explicit
   protection requirement.
 
 An actual failed calculation, missing required result, invalid estimate,
@@ -74,8 +80,9 @@ ASSESSMENTS:
 - ID:
   DECISION: BLOCKING | NON_BLOCKING | DISMISS
   TYPE: DEFECT | DESIGN | SCOPE | PLAN_GAP | TEST_ORACLE
-  CHANCE: REALISTIC | UNLIKELY | OUTSIDE_NORMAL_USE
-  IMPACT: SERIOUS | LIMITED | MINOR
+  SEVERITY: 1 MINOR | 2 MODERATE | 3 MAJOR | 4 CRITICAL | UNKNOWN
+  LIKELIHOOD: 1 REMOTE | 2 POSSIBLE | 3 LIKELY | 4 OBSERVED | UNKNOWN
+  RATING_REASON: <consequence and trigger; missing fact if UNKNOWN>
   EXPECTED_USE_AND_ACCESS:
   WHAT_MUST_HAPPEN:
   EVIDENCE:
@@ -108,8 +115,9 @@ never rewrite or close the finding.
 ACCEPTANCE_ASSESSMENTS:
 - ID:
   DECISION: ACCEPTABLE | NOT_ACCEPTABLE | INSUFFICIENT_EVIDENCE
-  CHANCE: CERTAIN | REALISTIC | UNLIKELY | UNKNOWN
-  IMPACT: SERIOUS | LIMITED | MINOR | UNKNOWN
+  SEVERITY: 1 MINOR | 2 MODERATE | 3 MAJOR | 4 CRITICAL | UNKNOWN
+  LIKELIHOOD: 1 REMOTE | 2 POSSIBLE | 3 LIKELY | 4 OBSERVED | UNKNOWN
+  RATING_REASON: <consequence and trigger; missing fact if UNKNOWN>
   SUPPORTED_USE_AND_ACCESS:
   PRACTICAL_CONSEQUENCE:
   DETECTION_AND_RECOVERY:
