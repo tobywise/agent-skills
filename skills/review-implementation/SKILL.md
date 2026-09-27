@@ -1,6 +1,6 @@
 ---
 name: review-implementation
-description: Review the current implementation against its plan, read-only, and report findings with scientific tiers. Use when asked to review an implementation, check work against a plan, or re-review after fixes, or when the user invokes /review-implementation.
+description: Review the current implementation against its plan, read-only, and report findings with severity, likelihood, and scientific tiers. Use when asked to review an implementation, check work against a plan, or re-review after fixes, or when the user invokes /review-implementation.
 ---
 
 # Review implementation
@@ -39,6 +39,11 @@ genuinely absent from the worktree.
 
 Inspect every acceptance ID and relevant contract even after finding a
 blocker. `REVIEW_COVERAGE` must name each one you inspected.
+
+Use [review ratings](references/ratings.md) for every finding and risk
+candidate. State severity, likelihood, and a short evidence-based reason for
+each. The ratings describe impact and exposure; they do not replace the
+blocking rules below.
 
 ## What blocks
 
@@ -86,9 +91,10 @@ gate, or fail-fast violation. These are always `IMPLEMENTATION` blockers.
 Don't enumerate merely conceivable risks. Record a `RISK_CANDIDATE` only when
 repository or user evidence shows a concrete future trigger reachable in normal
 supported use or through an ordinary operator mistake, with a consequence
-capable of serious harm. Record the condition, evidence, requirement and paths
-only — not chance, impact, or a fix. Actual failed computations and
-deterministic defects are findings, not risk candidates.
+capable of serious harm. Record the condition, evidence, requirement, paths,
+and provisional severity and likelihood, but do not propose a fix. Actual
+failed computations and deterministic defects are findings, not risk
+candidates.
 
 If a `scientific-risk-reviewer` agent is available, recommend running it on the
 risk candidates and any proposed blockers. Otherwise present them to the user
@@ -130,6 +136,9 @@ FINDINGS:
 - ID:
   TIER: IMPLEMENTATION | INTERPRETATION | DEFERRED
   CLASSIFICATION: BLOCKING | NON_BLOCKING  <type>
+  SEVERITY: 1 MINOR | 2 MODERATE | 3 MAJOR | 4 CRITICAL | UNKNOWN
+  LIKELIHOOD: 1 REMOTE | 2 POSSIBLE | 3 LIKELY | 4 OBSERVED | UNKNOWN
+  RATING_REASON: <consequence and trigger; missing fact if UNKNOWN>
   SUPPORTED_PATH:
   HARM:
   EVIDENCE: <file:line, contract, or command output>
@@ -138,12 +147,16 @@ FINDINGS:
 <none if empty>
 RISK_CANDIDATES:
 - ID:
+  SEVERITY: 1 MINOR | 2 MODERATE | 3 MAJOR | 4 CRITICAL | UNKNOWN
+  LIKELIHOOD: 1 REMOTE | 2 POSSIBLE | 3 LIKELY | 4 OBSERVED | UNKNOWN
+  RATING_REASON: <consequence and trigger; missing fact if UNKNOWN>
   CONDITION:
   EVIDENCE:
   RELEVANT_REQUIREMENT:
   RELEVANT_PATHS:
 <none if empty>
-UNVERIFIED: <interpretation items and anything you could not check, with reason>
+UNVERIFIED: <interpretation issues with severity, likelihood, and reason;
+             anything you could not check, with reason>
 SCOPE: PASS | FAIL
 NEXT_STEP:
 ```

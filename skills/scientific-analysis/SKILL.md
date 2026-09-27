@@ -108,8 +108,9 @@ how likely it is during normal use, an unusual sequence of events, someone
 deliberately changing protected files or settings, unsupported use, or whether
 the effect changes the calculation rather than only labels and records.
 
-The original reviewer describes the condition and evidence. It does not decide
-whether a possible risk blocks implementation. An actual failed calculation,
+The original reviewer describes the condition and evidence, and gives
+provisional ratings. It does not decide whether a possible risk blocks
+implementation. An actual failed calculation,
 missing required result, invalid estimate, non-convergence, incomplete required
 candidate set, or failed validity check is not a possible risk: it remains a
 direct blocking implementation failure.
@@ -119,30 +120,17 @@ plan, repository, and user. Consider existing safeguards, whether the problem
 would be noticed, whether it can be corrected, and whether an extra safeguard
 would meaningfully reduce risk.
 
-| Chance | Meaning |
-|---|---|
-| `REALISTIC` | It could happen during normal operation or through an ordinary mistake. |
-| `UNLIKELY` | It is possible, but requires an unusual sequence of events. |
-| `OUTSIDE_NORMAL_USE` | It requires deliberate interference, special access, or use the pipeline does not claim to support. |
+Use [review ratings](../review-implementation/references/ratings.md) to state the severity and
+likelihood of each reported issue. A possible risk at severity 3 or 4 with
+likelihood 3 or 4 may block implementation. At likelihood 2 it may block only
+when the project explicitly requires protection against that situation.
+Severity 2 risks are normally non-blocking; dismiss severity 1 risks and
+likelihood 1 risks outside normal use unless an explicit requirement applies.
 
-| Impact | Meaning |
-|---|---|
-| `SERIOUS` | A wrong, missing, mixed, or scientifically invalid result could appear valid. |
-| `LIMITED` | Labels, records, or workflow information could be wrong, but the calculation remains valid and the problem can be corrected. |
-| `MINOR` | There is no meaningful effect on the scientific result or supported workflow. |
-
-- A `REALISTIC` risk with `SERIOUS` impact may block implementation.
-- An `UNLIKELY` risk with `SERIOUS` impact is normally non-blocking. It may
-  block only when the project explicitly requires protection against that
-  situation.
-- A `LIMITED` risk is non-blocking, and a `MINOR` risk is dismissed.
-- A risk that is `OUTSIDE_NORMAL_USE` is dismissed unless the project explicitly
-  says the pipeline must protect against it.
-- A written requirement alone does not make a highly unlikely scenario blocking.
-  The plan or another authority must describe the situation and why protection
-  matters.
-- When the evidence does not establish serious blocking harm, the risk is not
-  blocking by default.
+A written requirement alone does not make a highly unlikely scenario blocking.
+The plan or another authority must describe the situation and why protection
+matters. When the evidence does not establish serious blocking harm, the risk
+is not blocking by default.
 
 ### Contract proportionality
 
