@@ -49,3 +49,6 @@ button.nav-link.active { background: var(--sidebar-accent); }
   .review-why { grid-template-columns: 1rem minmax(0,1fr); }
   .toggle { padding: 0 .625rem; }
 }
+
+.review-copy-fallback label { display: grid; gap: .375rem; font-size: .8125rem; font-weight: 500; }
+.review-copy-fallback textarea { width: 100%; min-height: 12rem; resize: vertical; font-family: var(--font-mono); font-size: .75rem; line-height: 1.5; }

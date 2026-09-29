@@ -133,6 +133,45 @@ test("standalone page embeds plan text safely and its script parses", async () =
 });
 
 
+test("copy answers works when clipboard access is restricted", async () => {
+  await withReview(async ({ root, plan }) => {
+    const output = await exportPage(root, "test-review");
+    const html = await readFile(output, "utf8");
+    const script = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)][1][1].replace(/\n\s*start\(\);\s*$/, "\n");
+    for (const [clipboard, legacyCopy, expectedManual] of [
+      [undefined, true, false],
+      [{ writeText: async () => { throw new Error("Blocked"); } }, false, true],
+    ]) {
+      let selections = 0;
+      let copiedText = "";
+      const field = { style: {}, focus() {}, select() { selections += 1; }, remove() {} };
+      const context = vm.createContext({
+        document: {
+          documentElement: { dataset: {} },
+          getElementById(id) {
+            if (id === "review-data") return { textContent: JSON.stringify({ standalone: true, id: "test-review", plan, answers: {}, state: { round: 1, status: "review" } }) };
+            if (id === "manual-copy") return field;
+            return null;
+          },
+          createElement() { return field; },
+          body: { append(item) { copiedText = item.value; } },
+          execCommand() { return legacyCopy; },
+        },
+        navigator: { clipboard },
+        localStorage: { getItem() { return null; } },
+        matchMedia() { return { matches: false }; },
+        location: { pathname: "/" },
+      });
+      vm.runInContext(`${script}\nrender = () => {};`, context);
+      await vm.runInContext("copyAnswers()", context);
+      assert.equal(JSON.parse(copiedText).id, "test-review");
+      assert.equal(vm.runInContext("manualCopy", context), expectedManual);
+      assert.equal(selections, expectedManual ? 2 : 1);
+      assert.match(vm.runInContext("notice", context), expectedManual ? /Select the answers below/ : /Answers copied/);
+    }
+  });
+});
+
 test("CLI can export a page, import answers, and finish a review", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "plan-review-cli-"));
   const id = "cli-review";

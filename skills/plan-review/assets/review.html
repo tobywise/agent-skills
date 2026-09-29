@@ -26,6 +26,7 @@
     let onlyOpen = false;
     let menuOpen = false;
     let notice = "";
+    let manualCopy = false;
     const saveTimers = new Map();
 
     function node(tag, className, value) {
@@ -67,9 +68,30 @@
     function go(target) { page = target; menuOpen = false; notice = ""; render(); window.scrollTo(0, 0); }
     function packet() { return { id: boot.id, round: review.state.round, answers: Object.fromEntries(Object.entries(review.answers).filter(([, answer]) => answer.round === review.state.round)) }; }
     async function copyAnswers() {
-      try { await navigator.clipboard.writeText(JSON.stringify(packet(), null, 2)); notice = "Answers copied. Paste them into the agent conversation."; }
-      catch { notice = "Clipboard unavailable. Use Download answers."; }
+      const answers = JSON.stringify(packet(), null, 2);
+      let copied = false;
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(answers);
+          copied = true;
+        }
+      } catch { /* Try the selected text method below. */ }
+      if (!copied) {
+        const field = document.createElement("textarea");
+        field.value = answers;
+        field.readOnly = true;
+        field.style.position = "fixed";
+        field.style.left = "-9999px";
+        document.body.append(field);
+        field.focus();
+        field.select();
+        try { copied = Boolean(document.execCommand?.("copy")); } catch { /* Show the answers for manual copying. */ }
+        field.remove();
+      }
+      manualCopy = !copied;
+      notice = copied ? "Answers copied. Paste them into the agent conversation." : "Clipboard access is blocked. Select the answers below and press Ctrl+C or Cmd+C.";
       render();
+      if (manualCopy) { const field = document.getElementById("manual-copy"); field?.focus(); field?.select(); }
     }
     function downloadAnswers() {
       const url = URL.createObjectURL(new Blob([JSON.stringify(packet(), null, 2)], { type: "application/json" }));
@@ -218,6 +240,12 @@
       if (review.state.status === "submitted") text(pageBody, "div", "alert alert-info", "This round was sent. The agent will revise the requested decisions and open the next round.");
       if (review.state.status === "complete") text(pageBody, "div", "alert alert-success", "The decisions are settled. The agent is preparing the final plan.");
       const actions = node("div", "review-actions"); if (review.state.status === "review") actions.append(button(api ? "Send answers to agent" : "How to send answers", "btn", sendAnswers)); actions.append(button("Copy answers", "btn btn-outline", copyAnswers), button("Download answers", "btn btn-outline", downloadAnswers)); pageBody.append(actions);
+      if (manualCopy) {
+        const wrap = node("div", "review-copy-fallback");
+        const label = node("label", "", "Answers to copy");
+        const field = node("textarea", "textarea"); field.id = "manual-copy"; field.readOnly = true; field.value = JSON.stringify(packet(), null, 2);
+        label.append(field); wrap.append(label); pageBody.append(wrap);
+      }
       if (boot.standalone) text(pageBody, "div", "alert alert-info", "This standalone page stores answers in this browser. Copy or download them and send them to the agent."); content.append(pageBody);
     }
     function render() {
