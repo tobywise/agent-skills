@@ -46,6 +46,7 @@ Codex. Agents also load skills themselves when a task matches.
 |---|---|
 | `review-implementation` | Read-only review of the current work against its plan |
 | `scientific-risk-review` | Second opinion on whether a finding should really block |
+| `github-pr-review` | Draft or post GitHub PR reviews with evidence links and ratings |
 | `pr-description` | Reviewer-focused PR description with a call-dependency diagram |
 
 | Scientific work | |
