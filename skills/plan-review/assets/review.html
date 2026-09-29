@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Plan review</title>
+  <style>__STYLE__</style>
+</head>
+<body>
+  <script id="review-data" type="application/json">__BOOT_DATA__</script>
+  <div id="app"></div>
+  <script>
+    const boot = JSON.parse(document.getElementById("review-data").textContent);
+    document.documentElement.dataset.accent = "blue";
+    const themeKey = "plan-review:theme";
+    let savedTheme;
+    try { savedTheme = localStorage.getItem(themeKey); } catch { /* Local files may block browser storage. */ }
+    document.documentElement.dataset.theme = savedTheme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const review = { plan: boot.plan, answers: boot.answers || {}, state: boot.state };
+    const api = boot.standalone ? null : location.pathname.replace(/^\/p\//, "/api/");
+    const draftKey = () => `plan-review:${boot.id}:${review.state.round}`;
+    if (boot.standalone) {
+      try { review.answers = { ...review.answers, ...JSON.parse(localStorage.getItem(draftKey()) || "{}") }; } catch { /* Keep answers from the file. */ }
+    }
+    let page = "home";
+    let onlyOpen = false;
+    let menuOpen = false;
+    let notice = "";
+    const saveTimers = new Map();
+
+    function node(tag, className, value) {
+      const item = document.createElement(tag);
+      if (className) item.className = className;
+      if (value !== undefined) item.textContent = value;
+      return item;
+    }
+    function button(label, className, action) {
+      const item = node("button", className, label);
+      item.type = "button";
+      item.addEventListener("click", action);
+      return item;
+    }
+    function text(parent, tag, className, value) { const item = node(tag, className, value); parent.append(item); return item; }
+    function allDecisions() { return review.plan.pages.flatMap(section => section.decisions); }
+    function answerFor(id) { return review.answers[id] || { round: review.state.round }; }
+    function counts() {
+      const values = allDecisions().map(item => review.answers[item.id]?.status);
+      return { total: values.length, ok: values.filter(value => value === "ok").length, change: values.filter(value => value === "change").length, explain: values.filter(value => value === "explain").length, not_ok: values.filter(value => value === "not_ok").length, pending: values.filter(value => !value).length };
+    }
+    function validAnswer(answer) { return answer.status && (answer.status !== "change" || answer.comment?.trim() || answer.rewrite?.trim()) && (answer.status !== "explain" || answer.comment?.trim()); }
+    async function request(suffix, options) {
+      const response = await fetch(`${api}/${suffix}`, options);
+      if (!response.ok) throw new Error(await response.text());
+      return response.json();
+    }
+    async function persist(id) {
+      try { localStorage.setItem(draftKey(), JSON.stringify(review.answers)); } catch { /* Browser storage may be unavailable. */ }
+      if (!api || review.state.status !== "review" || !validAnswer(review.answers[id])) return;
+      await request("answer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ decisionId: id, answer: review.answers[id] }) });
+    }
+    function changeAnswer(id, patch, redraw = true) {
+      review.answers[id] = { ...answerFor(id), ...patch, round: review.state.round };
+      clearTimeout(saveTimers.get(id));
+      saveTimers.set(id, setTimeout(() => persist(id).catch(error => { notice = `Save failed: ${error.message}`; render(); }), 350));
+      if (redraw) render();
+    }
+    function go(target) { page = target; menuOpen = false; notice = ""; render(); window.scrollTo(0, 0); }
+    function packet() { return { id: boot.id, round: review.state.round, answers: Object.fromEntries(Object.entries(review.answers).filter(([, answer]) => answer.round === review.state.round)) }; }
+    async function copyAnswers() {
+      try { await navigator.clipboard.writeText(JSON.stringify(packet(), null, 2)); notice = "Answers copied. Paste them into the agent conversation."; }
+      catch { notice = "Clipboard unavailable. Use Download answers."; }
+      render();
+    }
+    function downloadAnswers() {
+      const url = URL.createObjectURL(new Blob([JSON.stringify(packet(), null, 2)], { type: "application/json" }));
+      const link = document.createElement("a"); link.href = url; link.download = `${boot.id}-answers.json`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+    async function sendAnswers() {
+      if (!api) { notice = "This is a standalone copy. Copy or download the answers and send them to the agent."; render(); return; }
+      const incomplete = Object.entries(review.answers).filter(([, answer]) => !validAnswer(answer));
+      if (incomplete.length) { notice = "Complete the comment or rewrite for every Change or Explain answer."; render(); return; }
+      try {
+        for (const timer of saveTimers.values()) clearTimeout(timer);
+        for (const id of Object.keys(packet().answers)) await persist(id);
+        await request("submit", { method: "POST" });
+        review.state.status = "submitted";
+        go("summary");
+        notice = "Answers sent. Tell the agent “sent” if it does not respond automatically.";
+        render();
+      } catch (error) { notice = `Could not send answers: ${error.message}`; render(); }
+    }
+
+    function icon(name) {
+      const paths = {
+        check: '<path d="M20 6 9 17l-5-5"/>',
+        x: '<path d="M18 6 6 18M6 6l12 12"/>',
+        pencil: '<path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+        help: '<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>',
+        menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+        moon: '<path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/>',
+        sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>',
+        send: '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+        alert: '<path d="m10.3 3.9-8.1 14A2 2 0 0 0 3.9 21h16.2a2 2 0 0 0 1.7-3.1l-8.1-14a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/>',
+        home: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/><path d="M9 21v-8h6v8"/>',
+        list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+        arrow: '<path d="M5 12h14m-6-6 6 6-6 6"/>',
+        clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'
+      };
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.classList.add("icon"); svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("fill", "none"); svg.setAttribute("stroke", "currentColor"); svg.setAttribute("stroke-width", "2"); svg.setAttribute("stroke-linecap", "round"); svg.setAttribute("stroke-linejoin", "round"); svg.setAttribute("aria-hidden", "true");
+      svg.innerHTML = paths[name]; return svg;
+    }
+    function labeledButton(label, classes, symbol, action) {
+      const item = button("", classes, action); if (symbol) item.append(icon(symbol)); item.append(node("span", "", label)); return item;
+    }
+    function badge(label, classes = "badge-outline") { return node("span", `badge ${classes}`, label); }
+    function sectionCount(section) { return section.decisions.filter(item => review.answers[item.id]?.status).length; }
+    function renderShell() {
+      const app = node("div", `app${menuOpen ? " review-sidebar-open" : ""}`);
+      const sidebar = node("aside", "sidebar");
+      const brand = node("div", "side-brand"); const mark = node("div", "side-logo"); mark.append(icon("check"));
+      const titles = node("div", "side-titles"); titles.append(node("div", "side-title", review.plan.title), node("div", "side-sub", "Plan review")); brand.append(mark, titles); sidebar.append(brand);
+      const scroll = node("div", "side-scroll"); const nav = node("nav", "nav");
+      const home = node("div", "nav-group"); home.append(labeledButton("Home", `nav-link${page === "home" ? " active" : ""}`, "home", () => go("home"))); nav.append(home);
+      const themes = node("div", "nav-group"); text(themes, "div", "nav-label", "Pages");
+      for (const [index, section] of review.plan.pages.entries()) {
+        const item = button("", `nav-link${page === section.id ? " active" : ""}`, () => go(section.id));
+        item.append(node("span", "nav-number", String(index + 1)), node("span", "nav-text", section.title), node("span", "nav-count", `${sectionCount(section)}/${section.decisions.length}`)); themes.append(item);
+      }
+      nav.append(themes);
+      const finish = node("div", "nav-group"); text(finish, "div", "nav-label", "Finish");
+      finish.append(labeledButton("Answer summary", `nav-link${page === "summary" ? " active" : ""}`, "list", () => go("summary"))); nav.append(finish); scroll.append(nav); sidebar.append(scroll);
+      const count = counts(); const foot = node("div", "side-foot");
+      const progress = node("div", "side-progress"); const fill = node("span", ""); fill.style.width = `${count.total ? (count.total - count.pending) / count.total * 100 : 0}%`; progress.append(fill);
+      foot.append(progress, node("div", "side-count", `${count.total - count.pending} of ${count.total} decisions answered`)); sidebar.append(foot);
+      const scrim = button("", "mobile-scrim", () => { menuOpen = false; render(); }); scrim.setAttribute("aria-label", "Close menu");
+      const main = node("main", "main-col"); const bar = node("header", "topbar");
+      const menu = labeledButton("Menu", "btn btn-ghost btn-icon menu-button", "menu", () => { menuOpen = !menuOpen; render(); }); menu.setAttribute("aria-label", "Open menu"); bar.append(menu);
+      const crumbs = node("div", "crumbs"); crumbs.append(node("span", "", "Plan review"), node("span", "crumb-sep", "/"), node("span", "crumb-current", page === "home" ? "Home" : page === "summary" ? "Answer summary" : review.plan.pages.find(item => item.id === page)?.title || "Review")); bar.append(crumbs);
+      const tools = node("div", "topbar-right"); tools.append(node("span", "save-state", review.state.status === "review" ? "●  Saved locally" : review.state.status === "submitted" ? "●  Sent" : "●  Complete"), badge(`Round ${review.state.round}`, "badge-outline round-badge"));
+      const theme = labeledButton("Theme", "btn btn-ghost btn-icon", document.documentElement.dataset.theme === "dark" ? "sun" : "moon", () => { document.documentElement.dataset.theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark"; try { localStorage.setItem(themeKey, document.documentElement.dataset.theme); } catch { /* Keep this choice for the open page. */ } render(); }); theme.setAttribute("aria-label", "Change color theme"); tools.append(theme);
+      const send = labeledButton("Send answers", "btn btn-sm submit-button", "send", sendAnswers); send.disabled = review.state.status !== "review"; tools.append(send); bar.append(tools); main.append(bar);
+      const wrap = node("div", "content-wrap"); const content = node("div", "content"); wrap.append(content); main.append(wrap); app.append(sidebar, scrim, main);
+      document.getElementById("app").replaceChildren(app);
+      if (notice) { const alert = node("div", `alert review-notice${notice.includes("failed") || notice.includes("Could not") ? " alert-destructive" : " alert-info"}`); alert.append(icon("help"), node("div", "alert-description", notice)); wrap.prepend(alert); }
+      return content;
+    }
+    function renderHome(content) {
+      const pageBody = node("div", "page"); const intro = node("div", "review-intro"); intro.append(node("h1", "", review.plan.title), node("p", "page-intro review-home-summary", review.plan.summary));
+      const badges = node("div", "home-badges"); badges.append(badge("Review", "badge-outline"), badge(`${review.plan.pages.length} pages`, "badge-outline"), badge(`${counts().total} decisions`, "badge-outline")); intro.append(badges); pageBody.append(intro);
+      const requestCard = node("section", "card"); const requestHeader = node("div", "card-header"); requestHeader.append(node("h2", "card-title", "The request")); const requestBody = node("div", "card-content"); requestBody.append(node("p", "d-text", review.plan.summary)); requestCard.append(requestHeader, requestBody); pageBody.append(requestCard);
+      const count = counts(); const stats = node("div", "stat-grid");
+      for (const [label, value, tone, symbol] of [["Decisions", count.total, "", "list"], ["Accepted", count.ok, "tone-ok", "check"], ["Needs revision", count.change + count.explain, "tone-modify", "pencil"], ["Unanswered", count.pending, "", "clock"]]) {
+        const tile = node("div", `stat-tile ${tone}`); const title = node("div", "stat-label"); title.append(icon(symbol), node("span", "", label)); tile.append(title, node("div", "stat-value", String(value))); stats.append(tile);
+      }
+      pageBody.append(stats);
+      const how = node("section", "card"); const howHeader = node("div", "card-header"); howHeader.append(node("h2", "card-title", "How to answer"));
+      const howBody = node("div", "card-content"); const grid = node("div", "how-grid");
+      for (const [label, detail, tone, symbol] of [["OK", "Accept this proposal.", "tone-ok", "check"], ["Not OK", "Reject this proposal.", "tone-ko", "x"], ["Change", "Ask for a specific revision.", "tone-modify", "pencil"], ["Explain", "Ask a question before deciding.", "tone-explain", "help"]]) {
+        const item = node("div", "how-item"); const sign = node("div", `how-icon ${tone}`); sign.append(icon(symbol)); const words = node("div", ""); words.append(node("div", "how-title", label), node("p", "review-dim", detail)); item.append(sign, words); grid.append(item);
+      }
+      howBody.append(grid); how.append(howHeader, howBody); pageBody.append(how);
+      const outline = node("section", "card"); const outlineHeader = node("div", "card-header"); outlineHeader.append(node("h2", "card-title", "Pages")); const outlineBody = node("div", "card-content review-section-list");
+      for (const section of review.plan.pages) { const link = button("", "outline-link", () => go(section.id)); link.append(icon("list"), node("span", "outline-title", section.title), node("span", "outline-count", `${sectionCount(section)}/${section.decisions.length}`)); outlineBody.append(link); }
+      outline.append(outlineHeader, outlineBody); pageBody.append(outline);
+      const cta = node("div", "home-cta"); cta.append(labeledButton("Start reviewing", "btn", "arrow", () => go(review.plan.pages[0].id))); pageBody.append(cta); content.append(pageBody);
+    }
+    function field(parent, label, value, placeholder, onInput) {
+      const wrap = node("div", "review-field"); const name = node("label", "", label); const input = node("textarea", "textarea"); input.value = value || ""; input.placeholder = placeholder; input.addEventListener("input", () => onInput(input.value)); name.append(input); wrap.append(name); parent.append(wrap);
+    }
+    function decisionCard(decision, section) {
+      const answer = answerFor(decision.id); const readOnly = review.state.status !== "review";
+      const card = node("article", "card decision"); card.dataset.importance = decision.importance;
+      const head = node("div", "card-header"); const meta = node("div", "d-meta");
+      meta.append(badge(decision.id.toUpperCase(), "badge-outline badge-mono"));
+      if (decision.importance === "critical") meta.append(badge("Critical", "badge-danger-outline"));
+      else if (decision.importance === "important") meta.append(badge("Important", "badge-outline"));
+      meta.append(badge(section.title, "badge-outline"));
+      const state = node("span", "d-state"); state.append(badge(answer.status ? { ok: "Accepted", not_ok: "Rejected", change: "Change requested", explain: "Question asked" }[answer.status] : "Pending", answer.status ? { ok: "badge-success", not_ok: "badge-danger", change: "badge-warning", explain: "badge-info" }[answer.status] : "badge-outline")); meta.append(state);
+      head.append(meta, node("h2", "d-title", decision.title)); card.append(head);
+      const body = node("div", "card-content");
+      if (decision.revision?.round === review.state.round) { const revised = node("div", "alert alert-info review-revision"); revised.append(icon("pencil"), node("div", "alert-title", "Revised for this round"), node("div", "alert-description", decision.revision.note)); body.append(revised); }
+      const why = node("div", "alert alert-warning review-why"); why.append(icon("alert"), node("div", "alert-title", "Why it matters"), node("div", "alert-description", decision.why)); body.append(why);
+      body.append(node("div", "d-text review-proposal", decision.proposal));
+      if (decision.options?.length) {
+        const options = node("div", "radio-cards");
+        for (const option of decision.options) {
+          const control = node("label", "radio-card"); const radio = node("input", ""); radio.type = "radio"; radio.name = `option-${decision.id}`; radio.value = option.id; radio.checked = answer.optionId === option.id; radio.disabled = readOnly; radio.addEventListener("change", () => changeAnswer(decision.id, { optionId: option.id })); control.append(radio);
+          const title = node("span", "rc-title"); title.append(node("span", "", option.title)); if (option.recommended) title.append(badge("Recommended", "badge-info")); control.append(title);
+          const details = node("div", "rc-body"); if (option.detail) details.append(node("span", "rc-detail", option.detail));
+          if (option.pros?.length || option.cons?.length) { const list = node("ul", "pros-cons review-option-pros"); for (const pro of option.pros || []) { const line = node("li", "pro"); line.append(icon("check"), node("span", "", pro)); list.append(line); } for (const con of option.cons || []) { const line = node("li", "con"); line.append(icon("x"), node("span", "", con)); list.append(line); } details.append(list); }
+          control.append(details); options.append(control);
+        }
+        body.append(options);
+      }
+      card.append(body);
+      const foot = node("div", "card-footer bordered"); const verdict = node("div", "review-verdict"); const row = node("div", "review-verdict-row"); const choices = node("div", "toggle-group");
+      for (const [status, label, tone, symbol] of [["ok", "OK", "tone-ok", "check"], ["not_ok", "Not OK", "tone-ko", "x"], ["change", "Change", "tone-modify", "pencil"], ["explain", "Explain", "tone-explain", "help"]]) {
+        const choice = button("", `toggle ${tone}`, () => changeAnswer(decision.id, { status, comment: status === "ok" ? "" : answer.comment || "", rewrite: status === "change" ? answer.rewrite || "" : "" })); choice.append(icon(symbol), node("span", "toggle-label review-toggle-text", label)); choice.disabled = readOnly; choice.setAttribute("aria-label", label); choice.setAttribute("aria-pressed", answer.status === status ? "true" : "false"); choices.append(choice);
+      }
+      row.append(choices, node("span", "review-save-note", readOnly ? "Round closed" : "Saved as you answer")); verdict.append(row);
+      if (["change", "explain", "not_ok"].includes(answer.status)) { const fields = node("div", "review-fields"); field(fields, answer.status === "explain" ? "Your question" : "Comment", answer.comment, answer.status === "explain" ? "What should the agent explain?" : "What should change, or why does this not work?", value => changeAnswer(decision.id, { comment: value }, false)); if (answer.status === "change") field(fields, "Rewrite the proposal (optional)", answer.rewrite, "Write the wording you want to see", value => changeAnswer(decision.id, { rewrite: value }, false)); verdict.append(fields); }
+      foot.append(verdict); card.append(foot); return card;
+    }
+    function renderSection(content, section) {
+      const pageBody = node("div", "page");
+      if (review.state.round > 1) { const tools = node("div", "page-toolbar"); tools.append(button(onlyOpen ? "Show all decisions" : "Show only open and revised", "btn btn-outline btn-sm", () => { onlyOpen = !onlyOpen; render(); })); pageBody.append(tools); }
+      const decisions = onlyOpen ? section.decisions.filter(item => !review.answers[item.id] || ["change", "explain"].includes(review.answers[item.id]?.status) || item.revision?.round === review.state.round) : section.decisions;
+      if (!decisions.length) text(pageBody, "div", "alert alert-info", "All decisions in this page were settled in an earlier round.");
+      for (const decision of decisions) pageBody.append(decisionCard(decision, section));
+      const position = review.plan.pages.indexOf(section); const footer = node("div", "page-nav review-footer");
+      footer.append(labeledButton("Previous", "btn btn-outline", null, () => go(position ? review.plan.pages[position - 1].id : "home")), labeledButton(position + 1 === review.plan.pages.length ? "Answer summary" : "Next page", "btn", "arrow", () => go(position + 1 === review.plan.pages.length ? "summary" : review.plan.pages[position + 1].id))); pageBody.append(footer); content.append(pageBody);
+    }
+    function renderSummary(content) {
+      const pageBody = node("div", "page"); const head = node("div", "review-intro"); head.append(node("h1", "", "Answer summary"));
+      const count = counts(); head.append(node("p", "page-intro", `${count.ok} accepted · ${count.not_ok} rejected · ${count.change + count.explain} need revision · ${count.pending} unanswered`)); pageBody.append(head);
+      for (const decision of allDecisions()) { const answer = review.answers[decision.id]; const card = node("div", "card review-summary-card"); const header = node("div", "card-header"); header.append(node("h2", "card-title", decision.title), badge(answer ? { ok: "OK", not_ok: "Not OK", change: "Change requested", explain: "Explanation requested" }[answer.status] : "No answer yet", answer ? { ok: "badge-success", not_ok: "badge-danger", change: "badge-warning", explain: "badge-info" }[answer.status] : "badge-outline")); card.append(header); if (answer?.comment) { const body = node("div", "card-content"); body.append(node("p", "review-small", answer.comment)); card.append(body); } pageBody.append(card); }
+      if (review.state.status === "submitted") text(pageBody, "div", "alert alert-info", "This round was sent. The agent will revise the requested decisions and open the next round.");
+      if (review.state.status === "complete") text(pageBody, "div", "alert alert-success", "The decisions are settled. The agent is preparing the final plan.");
+      const actions = node("div", "review-actions"); if (review.state.status === "review") actions.append(button(api ? "Send answers to agent" : "How to send answers", "btn", sendAnswers)); actions.append(button("Copy answers", "btn btn-outline", copyAnswers), button("Download answers", "btn btn-outline", downloadAnswers)); pageBody.append(actions);
+      if (boot.standalone) text(pageBody, "div", "alert alert-info", "This standalone page stores answers in this browser. Copy or download them and send them to the agent."); content.append(pageBody);
+    }
+    function render() {
+      if (!review.plan || !review.state) return;
+      const content = renderShell();
+      if (page === "home") renderHome(content);
+      else if (page === "summary") renderSummary(content);
+      else renderSection(content, review.plan.pages.find(item => item.id === page) || review.plan.pages[0]);
+    }
+    async function start() {
+      if (api) {
+        try { const bundle = await request("bundle"); Object.assign(review, bundle); onlyOpen = review.state.round > 1; }
+        catch (error) { document.getElementById("app").textContent = `Could not load review: ${error.message}`; return; }
+        setInterval(async () => {
+          try { const state = await request("state"); if (state.round !== review.state.round || state.status !== review.state.status) location.reload(); }
+          catch { /* A temporary disconnection does not remove the current page. */ }
+        }, 3000);
+      }
+      if (boot.standalone) onlyOpen = review.state.round > 1;
+      render();
+    }
+    start();
+  </script>
+</body>
+</html>

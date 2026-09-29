@@ -25,7 +25,7 @@ Restart each platform afterwards. Re-run the installer after a `git pull` or
 after adding or removing anything. It only creates, updates or prunes its own
 symlinks, plus one import line in `~/.claude/CLAUDE.md` with `--with-policy`.
 
-Needs `bash` and `git`, plus `node` for `langsmith-review`. On macOS, install
+Needs `bash` and `git`, plus Node.js 20 or later for `plan-review` and `node` for `langsmith-review`. On macOS, install
 GNU `findutils` and a current `bash`.
 
 ## Skills
@@ -36,7 +36,7 @@ Codex. Agents also load skills themselves when a task matches.
 | Plan and build | |
 |---|---|
 | `grill-me` | Interview you about a design until it's pinned down |
-| `plan-quiz` | Explore plan decisions in an interactive HTML questionnaire |
+| `plan-review` | Settle plan decisions over several rounds in a local HTML page |
 | `create-plan` | Write an implementation-ready plan, or a revised copy of one |
 | `create-multiple-plans` | Split large work into ordered, independently useful plans |
 | `orchestrate` | Carry a plan through implement → review → verify from the main session |
