@@ -1,10 +1,10 @@
 ---
 name: pr-description
-description: Draft a reviewer-focused pull request description from the current branch changes. Explain what changed and why in clear prose, identify risks and validation, and include a compact source-verified ASCII call dependency diagram for affected executable code. Use when asked to write, improve, update, or review a PR description or explain a branch diff.
+description: Draft a reviewer-focused pull request description from the current branch changes. Explain what changed and why in short, scannable prose, state whether scientific conclusions could change, identify risks and validation, and choose a compact call diagram, diff-style comparison, pseudocode explanation, or DAG when useful. Use when asked to write, improve, update, or review a PR description or explain a branch diff.
 metadata:
   compatibility: claude-code, codex, opencode, agent-skills
-  summary: Draft a reviewer-focused pull request description from the current branch changes, including a prose explanation and a source-verified ASCII call dependency diagram for newly added or modified code.
-  audience: software-engineers
+  summary: Draft a reviewer-focused pull request description from the current branch changes, including an explicit scientific impact assessment, scannable explanations, and a source-verified explanation of changed logic in the format best suited to the PR.
+  audience: scientists
   workflow: pull-request
 ---
 
@@ -12,7 +12,7 @@ metadata:
 
 Create an accurate, reviewer-focused pull request description from the repository's current changes.
 
-The final result must explain the change in prose, focus attention on meaningful behavior and design decisions, and include a compact ASCII call dependency diagram for newly added or modified executable code when one is useful.
+The final result must explain the change in short paragraphs and focused bullets, state whether it could change scientific conclusions, and focus attention on meaningful behavior and design decisions. When useful, choose a compact call diagram, diff-style comparison, pseudocode explanation, or directed acyclic graph (DAG) to make the change easier to understand.
 
 ## When to use
 
@@ -28,16 +28,12 @@ Do not use it as a substitute for a full correctness or security review. Report 
 
 ## Operating principles
 
-1. Inspect the repository before drafting.
-2. Treat source code and repository history as the source of truth.
-3. Do not claim behavior, test coverage, or validation that was not verified.
-4. Explain intent and behavior rather than paraphrasing every changed line.
-5. Separate confirmed facts from reasonable inferences.
-6. Optimize for a reviewer who understands the codebase but has not followed the implementation work.
-7. Keep the result proportional to the change. Small diffs need small descriptions, and no section is mandatory.
-8. Never invent issue numbers, benchmarks, rollout plans, screenshots, or test results.
-9. Do not modify repository files unless the user explicitly asks.
-10. Do not create or update a remote pull request unless the user explicitly asks.
+1. Ground claims in source code, history, recorded validation, or supplied context. Distinguish inference from verified facts; never invent evidence or references.
+2. Explain intent and behavior for a reviewer who has not followed the implementation work.
+3. Use the analysis below to decide what matters; do not report every inspection step or finding in the PR description.
+4. Keep the result proportional to the change. Headings are optional, but the scientific impact statement is required.
+5. Do not modify repository files unless the user explicitly asks.
+6. Do not create or update a remote pull request unless the user explicitly asks.
 
 ## Inputs and scope
 
@@ -70,69 +66,28 @@ Use the repository's available tools to inspect:
 - project guidance such as `AGENTS.md`, `CONTRIBUTING.md`, and PR templates;
 - tests, configuration, migrations, API definitions, and documentation affected by the change.
 
-Typical Git commands include:
-
-```bash
-git status --short
-git branch --show-current
-git remote show origin
-git log --oneline --decorate --no-merges <base>..HEAD
-git diff --stat <base>...HEAD
-git diff --name-status <base>...HEAD
-git diff <base>...HEAD
-```
-
-Adapt these commands to the repository and environment. Do not assume that `main` is the base branch.
+Do not assume that `main` is the base branch.
 
 ## Analysis workflow
 
 ### 1. Establish the change boundary
 
-Record:
-
-- current branch;
-- comparison base;
-- commits included;
-- changed files;
-- whether uncommitted changes are included.
+Establish the branch, comparison base, included commits and files, and whether uncommitted changes are in scope.
 
 ### 2. Build a semantic change inventory
 
-Group changes by purpose rather than file order. Useful categories include:
+Group changes by purpose rather than file order. For each group, identify what changed, why it was needed, how it works, and any compatibility or operational consequences. Include reused components only when they help explain the change.
 
-- user-visible behavior;
-- API or contract changes;
-- domain or business logic;
-- data model, persistence, or migrations;
-- background jobs and asynchronous processing;
-- configuration and deployment;
-- observability and error handling;
-- tests and fixtures;
-- documentation and developer experience;
-- refactoring with no intended behavior change.
-
-For each group, determine:
-
-- what changed;
-- why it appears necessary;
-- how the implementation works;
-- what existing components it reuses;
-- what compatibility or operational consequences it has.
-
-### 3. Trace changed execution paths
+### 3. Understand changed logic and relationships
 
 For executable code that is new or modified:
 
-1. Identify changed entry points, handlers, commands, jobs, constructors, exported functions, or public methods.
-2. Read the complete changed symbols, not only the diff hunks.
-3. Trace direct calls made by those symbols.
-4. Continue through newly added or modified callees while the path remains relevant to the change.
-5. Include unchanged dependencies only when they are needed to understand the new behavior.
-6. Verify each edge from source code. Do not infer a call solely from names, imports, types, or directory structure.
-7. Note important conditions, retries, asynchronous boundaries, persistence calls, external services, and error paths.
-8. Avoid exhaustive whole-repository call graphs.
+1. Read the complete changed functions and relevant surrounding code, not only the diff hunks.
+2. Compare previous and current logic, including conditions, calculations, dependencies, and failure behavior.
+3. Follow calls and data dependencies only as far as needed to explain the change. Include unchanged code only for necessary context.
+4. Verify relationships from source code; names, imports, and directory structure alone are not evidence.
 
-Label symbols as:
+When symbol status helps explain a diagram, label symbols as:
 
 - `[NEW]` for symbols introduced by the change;
 - `[MODIFIED]` for existing symbols whose executable behavior changed;
@@ -141,6 +96,18 @@ Label symbols as:
 When status is ambiguous, omit the status rather than guessing.
 
 ### 4. Assess impact and risk
+
+Start with scientific impact. Include a labelled `Scientific impact` statement near the top, using one assessment and a brief reason. Usually one or two sentences suffice; expand only to explain a material effect or uncertainty:
+
+- **Could change scientific conclusions:** Identify the affected result or interpretation and how it could change. Use this for changes to data selection, preprocessing, models, estimation, uncertainty, comparisons, or reported results that could affect conclusions.
+- **No change to scientific conclusions expected:** Explain why. This can cover editorial documentation, formatting, tooling unrelated to the analysis, or code reorganization that preserves the analysis. A PR labelled "docs" or "refactoring" is not enough evidence on its own.
+- **Uncertain:** Name the unresolved scientific effect and the evidence needed to assess it. Use this when the available code or context does not support either assessment above.
+
+Assess the whole PR: a scientific change remains relevant even if most files are documentation or cleanup. Documentation that changes analysis instructions or scientific interpretation can also affect conclusions.
+
+Distinguish potential impact from demonstrated impact. Say conclusions actually changed only when a comparison of results supports that claim; report the observed change and the comparison's scope. Passing tests alone does not establish that conclusions are unchanged. For code reorganization, distinguish an intention to preserve results from evidence that results are preserved.
+
+Keep this separate from operational risk: a reliable implementation can intentionally change scientific conclusions. A known failed or invalid scientific computation is an implementation failure, not merely an uncertain scientific impact; state the failure and do not present partial outputs as successful.
 
 Check for:
 
@@ -168,75 +135,79 @@ Distinguish clearly between:
 
 Never convert the existence of a test file into a claim that the test passed.
 
-## ASCII call dependency diagram
+## Choose the clearest explanation of the change
 
-Include an ASCII call dependency diagram when the change adds or modifies a meaningful execution path.
+Choose whichever format best answers the reviewer's main question about this PR. A call diagram is one option, not the default requirement. Usually use one format; add another only if it explains a distinct, important point. Omit this section when the short prose or bullets already explain the change.
 
-### Diagram rules
+| Format | Best suited to | What to show |
+| --- | --- | --- |
+| Call diagram | The change is about which functions call which others. | The affected caller-to-callee path, including relevant branches or asynchronous calls. |
+| Diff-style comparison | A small before-and-after contrast explains the change most clearly. | Removed behavior with `-` and added behavior with `+`, with only enough context to understand the difference. |
+| Pseudocode | The change is about a calculation, decision rule, loop, or sequence of checks. | Plain-language steps that explain the changed logic, including important conditions and failure behavior. |
+| Directed acyclic graph (DAG) | The change is about how data or analysis steps depend on one another, especially where paths split or join. | Relevant inputs, steps, and outputs, with arrows showing a stated dependency or flow. |
 
-- Use a fenced `text` block.
-- Use ASCII characters only.
-- Show caller-to-callee direction from top to bottom or left to right.
-- Prefer function, method, handler, job, or component names over filenames.
-- Add short condition labels only where they clarify control flow.
-- Mark asynchronous boundaries when important.
-- Keep the diagram compact enough to scan in a PR description.
-- Show the affected path, not the application's complete architecture.
-- Omit test helpers, generated code, framework internals, trivial accessors, and unrelated utilities.
-- Verify every call edge against the source.
-- If there is no meaningful call relationship, write `No meaningful call dependency change.` instead of inventing one.
+### Shared rules
 
-### Basic example
+- Keep the explanation compact and focused on the affected behavior. Omit unrelated helpers, framework internals, and the full application structure.
+- Verify every relationship and logic step against the source. For before-and-after comparisons, inspect both versions in the chosen review range.
+- Label conceptual diffs and pseudocode as simplified explanations; do not present them as literal patches or executable code. Preserve conditions, ordering, and failure behavior that matter to the change.
+- Make clear what changed and what remains only for context. Use status labels where helpful rather than adding them to every node or step.
+- Use fenced `diff` for comparisons and fenced `text` for pseudocode or ASCII diagrams. A DAG may use fenced `mermaid` when the PR destination supports it; otherwise use ASCII.
+- After the block, add at most a short explanation of anything important that is not already clear. Do not repeat every node or step in prose.
 
-```text
-[MODIFIED] handleRequest()
-    |
-    +--> [NEW] validatePolicy()
-    |        |
-    |        +--> [NEW] resolveRules()
-    |                  |
-    |                  +--> [EXISTING] PolicyStore.get()
-    |
-    +--> [EXISTING] loadConfig()
-```
+### Call diagram
 
-### Conditional example
+Show caller-to-callee direction from top to bottom or left to right. Prefer function or method names over filenames, and label important branches or asynchronous boundaries.
 
 ```text
-[MODIFIED] processOrder()
+[MODIFIED] fit_participants()
     |
-    +--> [NEW] validateOrder()
+    +--> [NEW] check_trial_data()
     |
-    +--> order valid?
-           |
-           +-- yes --> [MODIFIED] reserveInventory()
-           |               |
-           |               +--> [EXISTING] InventoryClient.reserve()
-           |
-           +-- no  --> [NEW] rejectOrder()
+    +--> [EXISTING] fit_model()
 ```
 
-### Asynchronous example
+### Diff-style comparison
+
+Use a small literal excerpt when the code is easy to read, or a conceptual comparison when implementation details would obscure the change.
+
+Simplified behavior comparison:
+
+```diff
+- Fit the model using all recorded trials.
++ Exclude practice trials before fitting the model.
+```
+
+### Pseudocode
+
+Identify the changed step in the new logic, or show brief before-and-after versions if the contrast is essential. Avoid reproducing the implementation line by line.
+
+Simplified new logic; the data check is new:
 
 ```text
-[MODIFIED] POST /imports
-    |
-    +--> [NEW] createImport()
-             |
-             +--> [EXISTING] ImportRepository.insert()
-             |
-             +-- async --> [NEW] processImportJob()
-                                |
-                                +--> [EXISTING] ObjectStore.read()
-                                +--> [MODIFIED] importRows()
+For each participant:
+    Check that all required trial values are present. [NEW]
+    If a required value is missing, stop with an error naming the participant. [NEW]
+    Fit the model to that participant's trials.
 ```
 
-Immediately after the diagram, explain briefly:
+### DAG
 
-- where execution begins;
-- what new or modified path was introduced;
-- which existing components are reused;
-- any important branch, asynchronous boundary, persistence operation, external call, or error path.
+State what arrows mean, such as "data used by" or "must finish before". Use plain names for analysis steps and outputs. A data-processing arrow does not establish scientific causation; use causal arrows only when they represent an explicit scientific model supported by the source or supplied context.
+
+A DAG must have no cycles. Represent an iterative calculation as one labelled step with its iteration explained briefly, or choose pseudocode when the loop itself is the point of the change.
+
+Arrows mean "supplies data to"; excluding practice trials is new:
+
+```text
+Recorded trials --> [NEW] Exclude practice trials --> Analysis trials
+                                                        |        |
+                                                        v        v
+                                                    Model fit   Trial counts
+                                                        |        |
+                                                        v        v
+                                                     Results report
+```
 
 ## TL;DR plain-language standard
 
@@ -248,19 +219,16 @@ Use these content requirements:
 
 - `Problem` states where the issue occurred in the research or analysis process, what was wrong, and why it could affect results or interpretation.
 - `Resolution` describes the conceptual correction and any important safeguard in terms of the model, analysis, data, or reported output rather than internal code architecture.
-- `Impact` explains what researchers can now interpret, trust, detect, or do differently and identifies the incorrect outcome being prevented.
-- Use one or two short sentences for each field. A substantive change usually needs 60 to 110 words in total, and rarely more than 130; a small change needs far fewer. Never pad to reach a length.
+- `Scientific impact` uses the assessment above and explains whether results or conclusions could change, with a concrete reason. Include it even for documentation or code reorganization.
+- Default to one short sentence per field; use a second sentence or brief `Resolution` bullets only when needed. Keep the TL;DR under 130 words. This is a ceiling, not a target; small changes need far less.
 
 Use these language requirements:
 
 - Prefer concrete descriptions of what happens to the analysis, data, saved results, or researcher.
-- Common research terms such as `model`, `parameter`, `variable`, `condition`, `simulation`, and `uncertainty interval` may be used without definition.
-- A relevant method, such as reinforcement learning, regression, or simulation, may be named without explaining the entire method.
+- Common research terms and relevant methods may be named without definition; do not add a methods tutorial.
 - Briefly explain specialized variants, advanced statistical concepts, project-specific terms, and uncommon acronyms when they are necessary.
 - Remove software-engineering language from the TL;DR. Do not use code symbols, internal component names, or architecture labels unless they are also names that researchers see and need to recognize.
-- Use active voice and everyday words. Write the sentence the way you would say it out loud to a colleague from another lab.
-- Avoid compressed noun phrases that make the reader unpack several technical ideas at once. Break them into separate short sentences.
-- If a sentence needs a comma-separated clause to define a term, ask whether the term is needed at all.
+- Avoid compressed noun phrases. Remove unnecessary terms instead of adding definitions for them.
 - Apply a read-alone test: an undergraduate researcher should be able to explain the scientific or practical problem, the correction, and its consequence without reading the diff or the rest of the PR description.
 
 Translate software-oriented terms according to their meaning in context. For example:
@@ -287,42 +255,35 @@ For example, avoid a compressed TL;DR such as:
 
 Write it for the intended reader instead:
 
-> **Problem:** The baseline model of repeated choices was still estimating a learning rate, even though learning was switched off for that model. Those numbers meant nothing. Separately, some older recovery checks labelled their uncertainty ranges wrongly.
+> **Problem:** The baseline model of repeated choices reported a learning rate even though learning was switched off. Some recovery checks also mislabelled uncertainty ranges.
 >
-> **Resolution:** The baseline model no longer reports learning parameters. Saved model fits now record the code version that produced them, and fits from an incompatible older version are rejected instead of reused. The uncertainty ranges now carry the labels that match how they were calculated.
+> **Resolution:**
 >
-> **Impact:** Results now show only the parameters the model can actually estimate, with correctly labelled uncertainty ranges, and out-of-date fits can no longer reach a published figure unnoticed.
+> - Remove learning parameters from the baseline model.
+> - Reject saved fits from incompatible code versions.
+> - Label uncertainty ranges to match their calculation.
+>
+> **Scientific impact:** Could change scientific conclusions. Removing meaningless estimates and correcting uncertainty labels could change how researchers interpret model results; no comparison of conclusions has been run.
 
 ## Output format
 
-Produce copy-pasteable Markdown using the following structure. Omit sections that would be empty or meaningless.
+Produce copy-pasteable Markdown using the structure below. Omit optional sections that add no needed information beyond earlier sections; do not fill them to make the description look complete. Always retain scientific impact near the top and relevant validation. Follow required repository templates.
 
 ## TL;DR
 
-**Problem:** <In one to three plain-language sentences, describe where the issue occurs, what is wrong, and why it matters.>
+**Problem:** <State the issue or need and why it matters.>
 
-**Resolution:** <In one to three plain-language sentences, describe the conceptual correction and any important safeguard without software-engineering terminology.>
+**Resolution:** <State the conceptual correction; use brief bullets for distinct corrections.>
 
-**Impact:** <In one to three plain-language sentences, describe what researchers can now trust, interpret, detect, or do differently. Omit only when it would duplicate the resolution.>
+**Scientific impact:** <One assessment from the impact guidance, with a brief reason.>
 
 ## What changed
 
-### <Semantic area>
+<Add only details needed beyond the TL;DR. Use focused bullets for distinct changes or a short paragraph for one connected change.>
 
-<Explain the behavior and implementation in prose. Use bullets only where they improve scanning.>
+## How the logic changed
 
-### <Another semantic area>
-
-<Explain related changes.>
-
-## Affected call path
-
-```text
-<Source-verified ASCII call dependency diagram, or:
-No meaningful call dependency change.>
-```
-
-<Brief interpretation of the diagram.>
+<Use the format-selection guidance above. Rename this heading to fit the content, or omit the section if prose already explains the change.>
 
 ## Design decisions
 
@@ -348,28 +309,32 @@ Write like an experienced colleague leaving notes on their own work for someone 
 
 ### Be short
 
-- Aim for the shortest text that lets a reviewer open the diff with the right expectations. Most PRs need 150-400 words outside the diagram; a one-line fix needs two sentences.
-- Drop any section with nothing real to say. No "Design decisions" section is better than one that restates the diff.
-- Say each thing once. Do not repeat the TL;DR in "What changed", or the risks again in "Reviewer notes".
+- There is no minimum length. Keep ordinary PR descriptions under 300 words outside diagrams or logic examples; use more only when the change needs it for accurate review. Simple PRs should be much shorter.
+- Say each thing once, in the most useful section. The TL;DR is the overview; later sections should add only necessary detail.
+- Treat lists of topics to inspect as reasoning aids, not requests for a paragraph on each topic. Do not invent risks, alternatives, or non-goals to populate the template.
 - Cut sentences that only announce the next sentence, such as "This PR makes several changes to the parser. First, ...".
 - Do not list every file, test, or renamed symbol. Reviewers can read the file list.
+
+### Make it easy to scan
+
+- Keep each paragraph to one idea and usually one or two short sentences. Split it when the topic changes; do not compress a long paragraph into one long sentence.
+- Use bullets for distinct changes, risks, or validation results. Keep each bullet focused on one point and its consequence rather than turning it into a paragraph.
+- Lead with the consequence reviewers need to understand, then give only the details needed to explain it. Describe the final behavior, not a running account of the implementation work.
+- Use a small table when comparing several before-and-after behaviors is clearer than prose. Avoid nested lists and headings for every minor detail.
 
 ### Sound like a person
 
 - Use plain verbs: `use` rather than `utilize` or `leverage`, `let` rather than `enable`, `add` rather than `introduce support for`, `so that` rather than `in order to`.
-- Prefer short declarative sentences, and vary their length. Do not write every paragraph as three balanced clauses.
 - Name the thing that broke and the thing that fixed it. "The retry loop reused a closed socket" is better than "an issue with connection handling was addressed".
 - Write "this PR" or "I" where that is natural instead of using the passive voice to avoid naming an actor.
-- Explain unavoidable domain or codebase terms in passing. Do not stack several of them into one noun phrase.
 
 ### Keep the whole description in plain English
 
-The TL;DR has its own stricter standard, but the rest of the description follows the same instinct: scientific and statistical vocabulary is fine, software-engineering jargon is not.
+Apply the TL;DR translation table throughout. Later sections may include code details needed for review.
 
 - Assume the reader knows the science and the project, not software-engineering vocabulary. Terms such as `model`, `parameter`, `posterior`, `regression`, `simulation`, and `convergence` need no explanation.
-- Replace software-engineering abstractions with what actually happens. The translation table in the TL;DR standard above applies here too, not only in the TL;DR.
 - Say what the code does, not what category of thing it is: "the fitting step now retries once before giving up", not "retry semantics were added to the estimation layer".
-- Some terms are unavoidable in a code review, and function names, file paths, and commands belong here in backticks. Name them plainly and move on.
+- Use backticks for symbols, paths, commands, configuration keys, and values. Explain unfamiliar codebase terms only when needed, and expand uncommon acronyms on first use.
 - Do not use these unless the repository itself does: `orchestration`, `abstraction`, `layer`, `surface`, `contract`, `lifecycle`, `idiomatic`, `first-class`, `single source of truth`, `separation of concerns`, `refactor` used as a noun for the whole PR.
 
 ### Avoid these tells
@@ -388,11 +353,7 @@ Do not use:
 ### Say only what you know
 
 - State uncertainty directly: `The diff suggests ...`, `I could not verify ...`, `This appears to ...`.
-- Call a refactor behavior-preserving only when the code supports that claim.
 - Do not write "improves robustness" or similar without saying which failure stops happening.
-- Use backticks for symbols, paths, commands, configuration keys, and values.
-- Expand uncommon acronyms on first use.
-- Apply the TL;DR plain-language standard only to the TL;DR. Later sections keep the technical precision reviewers need, but still follow the rules above.
 
 ### Example
 
@@ -402,16 +363,21 @@ Avoid:
 
 Write instead:
 
-> Reservations were never released when a worker exited during provisioning, so the next run blocked on a lock held by a dead session. The lease now records the owning process, and `reapReservations()` clears entries whose owner is gone. Two callers that assumed a reservation always outlived its worker were updated.
+> Reservations were never released when a worker exited during setup, blocking the next run.
+>
+> - Record the owning process so `reapReservations()` can release reservations whose owner is gone.
+> - Update two callers to handle reservations ending when a worker exits.
+>
+> **Scientific impact:** No change to scientific conclusions expected. This changes worker cleanup; analysis inputs and calculations are unchanged.
 
 ## Existing PR templates
 
 If the repository contains a pull request template:
 
 1. Preserve its required headings and checklists.
-2. Map this skill's content into that structure.
+2. Map this skill's content into that structure, keeping the labelled scientific impact statement near the top under an appropriate existing heading.
 3. Do not mark checklist items complete without evidence.
-4. Add the ASCII call path under the most appropriate technical-details heading, or add `## Affected call path` if the template permits it.
+4. Place the chosen diagram or logic explanation under the most appropriate technical-details heading, or add `## How the logic changed` if the template permits it. Omit it when it adds nothing.
 
 ## Updating an existing PR description
 
@@ -427,20 +393,9 @@ When an existing PR body is available:
 
 Before returning the description, confirm that:
 
-- the base and change scope are understood;
-- major behavior changes are covered;
-- statements are traceable to code, history, tests, or user-provided context;
-- the call diagram contains only verified edges;
-- new, modified, and existing symbols are labelled accurately;
-- validation claims distinguish observed, run, passed, failed, and not-run checks;
-- risks and compatibility notes are concrete;
-- the TL;DR includes enough research or practical context to explain why the change matters;
-- software-engineering language in the TL;DR has been replaced with concrete descriptions;
-- necessary advanced or project-specific terms in the TL;DR are briefly explained;
-- the TL;DR passes the undergraduate-researcher read-alone test and stays within its length;
-- software-engineering jargon is plain English everywhere, while scientific terms are left intact;
-- the output follows any repository PR template;
-- every section earns its place, and none repeats another;
-- no sentence uses the words and constructions listed under "Avoid these tells";
-- the description could plausibly have been written by the author of the change;
-- the result is copy-pasteable Markdown without additional conversational filler.
+- the comparison range is clear and the main changes are covered;
+- claims and any diagram or logic explanation match the available evidence;
+- scientific impact is explicit and distinguishes potential effects from observed changes;
+- validation accurately distinguishes checks run, results, and relevant checks not run;
+- the TL;DR meets its reading-level and length requirements;
+- the description follows the required template, is easy to scan, and contains no repetition or filler.
