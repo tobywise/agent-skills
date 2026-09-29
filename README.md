@@ -50,8 +50,9 @@ Codex. Agents also load skills themselves when a task matches.
 | `pr-description` | Reviewer-focused PR description with a call-dependency diagram |
 
 For "review this PR and post the findings", use `review-implementation` first,
-then `github-pr-review` to publish the assessment. Reviews inspect existing
-test evidence; running tests requires explicit approval for that review.
+then `github-pr-review` to publish the assessment. State the diff being reviewed
+(PR, branch, uncommitted changes, or changes since a previous review). Reviews
+inspect existing test evidence; running tests requires explicit approval for that review.
 
 | Scientific work | |
 |---|---|

@@ -44,7 +44,8 @@ Formatting must not change ratings or decide anew whether a finding blocks.
 
 ## Format the review
 
-Keep the summary brief and put the most consequential findings first. Use this
+State the reviewed commit and diff scope in the summary, including any limits
+on coverage. Keep it brief and put the most consequential findings first. Use this
 shape when there are findings:
 
 ```markdown

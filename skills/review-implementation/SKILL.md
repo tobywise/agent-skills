@@ -20,24 +20,53 @@ posting skill.
 
 When a plan exists, its review standard, scope, contracts, required proof,
 forbidden patterns, and acceptance checklist are authoritative. Default a
-missing review standard to `GENERAL`. For `SCIENTIFIC_ANALYSIS`, load `scientific-analysis`;
-do not load it for `GENERAL`. Plans follow the `planning` format; load it if a
+missing review standard to `GENERAL`. For `SCIENTIFIC_ANALYSIS`, load
+`scientific-analysis`; do not load it for `GENERAL`. Plans follow the `planning` format; load it if a
 section or field is unclear.
 
 ## Inputs
 
 - **PR** — use the supplied URL or number, or an unambiguous PR identified by
-  the request. Record its base and head commits. Review the changes from their
-  merge base to that head, with surrounding source from the same head. Do not
-  substitute unrelated local changes for the PR contents.
+  the request. Record its base and head commits.
 - **Plan path** — use the supplied plan or one linked from the PR. For a PR
   without a plan, use its stated requirements and repository instructions;
   report `PLAN: none` and do not invent acceptance IDs. If the user explicitly
   asks for comparison against a particular plan that cannot be found, ask for
   its location.
-- **Base** — for local changes, use the supplied ref or the merge base with the
-  default branch. State the base and the scope of local changes reviewed.
+- **Base or range** — honor an explicitly requested comparison and any file
+  scope. Otherwise choose the comparison below.
 - **Previous review** — optional. If supplied, this is a re-review (see below).
+
+## Choose the diff
+
+Resolve commit refs to commit IDs and state the comparison before inspecting
+findings. Use the request and any earlier review to choose the scope:
+
+| Requested review | Comparison |
+| --- | --- |
+| PR | Merge base of the PR base and head, through the PR head. Exclude unrelated local edits. |
+| Branch | Merge base with the requested target branch, or the repository's default branch, through the branch head. |
+| Uncommitted changes | `git diff HEAD --` for staged and unstaged tracked changes; also inspect relevant files from `git ls-files --others --exclude-standard`. |
+| Staged changes only | `git diff --cached --`; inspect surrounding source from the index, not a newer working copy. |
+| Unstaged changes only | `git diff --`; inspect relevant untracked files if the requested scope includes them. |
+| Explicit commits or range | Honor the requested comparison, including two-dot or three-dot meaning; do not substitute the default branch. |
+| Re-review after fixes | Compare the previously reviewed head with the current head, and revisit unresolved findings (see below). |
+
+For PR and branch reviews, use `git diff <merge-base> <head> --` when the refs
+are available locally, or obtain the equivalent PR diff through GitHub. Inspect
+surrounding source from the reviewed head. Record both the target branch's
+commit and the merge base used for comparison.
+
+For an unspecified local review, infer scope from the request and `git status`:
+prefer uncommitted changes when present, otherwise the branch diff. State that
+choice. If multiple targets remain equally plausible or the necessary refs
+cannot be identified, ask for the missing target instead of guessing a range.
+
+Start with the changed files and lines. Follow callers, related code, tests,
+and requirements when needed to understand their effects. Report defects the
+changes introduce or expose, and failures of explicit requirements. Do not
+expand into an audit of unrelated existing problems. An unchanged file can
+still supply evidence for a required change that is missing.
 
 ## Inspecting
 
@@ -119,8 +148,13 @@ for judgment.
 
 ## Re-review
 
-When a previous review is supplied, inspect changed paths, the previous
-findings, and new evidence only. Keep a finding's ID while its root cause is
+When a previous review is supplied, inspect the changes since its recorded
+head, the previous findings, and new evidence. Compare the old and new trees
+directly even after a rebase or force push; a merge base can omit changes made
+since the previous review. Use the current PR diff to distinguish target-branch
+updates brought in by a rebase from changes to the PR. If the previous head is
+unavailable, state that limit and use the full current PR or branch diff. Revisit unresolved findings
+even when their lines have not changed. Keep a finding's ID while its root cause is
 unresolved; give a genuinely distinct defect a new ID. Account for every prior
 finding as closed, retained, or changed.
 
@@ -148,6 +182,7 @@ PLAN: <path, or none>
 PR: <URL, or local changes>
 BASE:
 HEAD: <reviewed commit; identify local changes when included>
+DIFF: <exact comparison or command, merge base when used, file scope, and untracked files included>
 SUMMARY:
 PASSED: <acceptance IDs, or none>
 REVIEW_COVERAGE: <IDs and contracts inspected; anything omitted and why>
