@@ -1,24 +1,25 @@
 ---
 name: github-pr-review
-description: Draft and, when requested, post GitHub pull request reviews with evidence links, severity, and likelihood. Use for PR review findings and decisions, not PR descriptions.
+description: Format and publish completed review findings as GitHub PR comments or submitted reviews. Use only when the user requests posting to GitHub. For assessing a PR, including requests to review and post, use review-implementation first. Do not select this skill for reviews or drafts requested only in chat.
 ---
 
-# GitHub PR review
+# Post a GitHub PR review
 
-Write reviews that help the author understand what to change, why it matters,
-and when the problem can occur.
+Publish a completed assessment with clear evidence links and ratings.
 
-## Prepare the review
+## Use the completed review
 
-- Identify the PR and inspect its current diff, relevant surrounding code, and
-  project review instructions. If the user only wants supplied findings
-  formatted, preserve their meaning and identify claims you have not checked.
-- Report actionable findings supported by evidence. For each finding, explain
-  the trigger, consequence, and practical fix. Check existing review comments
-  when useful to avoid repeating them.
-- When using a `review-implementation` report, preserve its finding
-  classifications, scientific tiers when present, and ratings. Do not turn an
-  unverified claim into a verified finding.
+- For a request to review and post, load and complete `review-implementation`
+  first. This skill handles formatting and submission after that assessment.
+- If the user already supplies a completed review to post, use it. If an
+  assessment is missing or needs further review, use `review-implementation`
+  before submission; do not conduct a separate review under this skill.
+- Preserve finding IDs, blocking decisions, classifications, scientific tiers,
+  severity, likelihood, rating reasons, and stated uncertainty. Keep possible
+  risks distinct from observed defects. Do not invent fixes for risk candidates.
+- Identify the intended PR and confirm the reviewed commit still matches its
+  head. If it has changed, use `review-implementation` to assess the new changes
+  before posting. Check existing comments when useful to avoid duplicates.
 
 ## Reference every finding
 
@@ -29,31 +30,17 @@ the relevant lines at a specific commit. Link further locations when needed to
 understand the issue. Check that each link opens the intended evidence before
 posting.
 
-A plain `path:line` is not enough. If you cannot locate the evidence, leave the
-claim out of the findings and describe it as unverified.
+A plain `path:line` is not enough. If a required reference cannot be located,
+report the missing reference before submission. Do not silently drop or
+reclassify a finding to make the review publishable.
 
-## Rate every finding
+## Preserve the ratings
 
-Report severity and likelihood separately for every finding and risk candidate.
-Give a short evidence-based reason for each rating. If the evidence does not
-support a rating, use `UNKNOWN` and name the missing fact. Ratings do not, by
-themselves, decide whether a finding blocks approval.
-
-| Severity | Consequence if the issue occurs |
-| --- | --- |
-| `4 CRITICAL` | A central result can be wrong while appearing valid, or harm is irreversible or widespread. |
-| `3 MAJOR` | A required result or supported workflow fails, or recovery takes substantial work. |
-| `2 MODERATE` | A limited, recoverable error matters to a user. |
-| `1 MINOR` | A small inconvenience has no meaningful effect on the result or workflow. |
-| `UNKNOWN` | Available evidence does not establish the consequence. |
-
-| Likelihood | Trigger in supported use |
-| --- | --- |
-| `4 OBSERVED` | The trigger has been observed or is inevitable in ordinary use. |
-| `3 LIKELY` | The trigger is reachable in normal use or through an ordinary mistake. |
-| `2 POSSIBLE` | The trigger needs an uncommon but plausible input or sequence. |
-| `1 REMOTE` | The trigger needs a contrived sequence, special interference, or unsupported use. |
-| `UNKNOWN` | Available evidence does not establish how the issue is triggered. |
+Include the severity, likelihood, and evidence-based reason for each from the
+completed review, for every finding and risk candidate. Preserve `UNKNOWN`
+and the named missing fact when a rating cannot be supported. If these fields
+are missing, complete them through `review-implementation` before posting.
+Formatting must not change ratings or decide anew whether a finding blocks.
 
 ## Format the review
 
@@ -79,13 +66,16 @@ issue was found. Do not claim a check ran unless it did.
 
 ## Post to GitHub
 
-- If the user asks for a draft, show the review without posting it. Post only
-  when the user requests posting; that request authorizes the submission.
-- Use `REQUEST_CHANGES` for verified blocking findings, `COMMENT` for
+- Post only when the user requests posting; that request authorizes the
+  submission. If the user changes the request to draft only, show the prepared
+  text without submitting it.
+- Honor the requested form of submission. For a plain PR comment, use
+  `gh pr comment`. For a formal review, use `gh pr review` with the event
+  supported by the assessment: `REQUEST_CHANGES` for blockers, `COMMENT` for
   nonblocking or unresolved feedback, and `APPROVE` only when approval is
-  intended and supported by the review. Do not infer approval merely from the
-  absence of findings in a limited review.
-- Write the review body to a file and pass it to `gh pr review` with
+  intended and supported. Explain an `ESCALATE` assessment in the body; it is
+  not a GitHub review event. Do not infer approval from a limited review.
+- Write the body to a file and pass it to the chosen command with
   `--body-file` to preserve Markdown and newlines. Use inline comments for
   findings when appropriate.
 - After posting, report the review decision and link to the posted review.

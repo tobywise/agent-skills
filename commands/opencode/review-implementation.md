@@ -1,5 +1,5 @@
 ---
-description: "Review the current implementation against its plan, read-only, and report findings with scientific tiers."
+description: "Review a PR or local implementation against its requirements and report findings with severity, likelihood, and scientific tiers when applicable."
 agent: code-reviewer
 ---
 

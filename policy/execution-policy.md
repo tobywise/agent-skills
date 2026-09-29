@@ -6,6 +6,20 @@
 - If `cbrun` is on `PATH`, this machine is a controller for remote workers: never run those commands directly on it, unless the project's agent instructions say its checks run locally.
 - Do not install or synchronize dependencies during an implementation pass, except the project-locked setup that `run-checks` allows.
 
+## Reviews
+
+- Use `review-implementation` to assess code or pull requests, including when
+  the user also asks to post the review on GitHub. Use `github-pr-review` only
+  to format and publish the completed assessment when posting is requested.
+- During a review, do not run tests unless the user explicitly approves test
+  execution for that review. Asking to review, verify, or post findings does
+  not grant that approval. Read existing tests and recorded results instead.
+- Approval remains valid for its stated scope; do not ask again for an already
+  approved test run. Follow `run-checks` for authorized runs. Do not delegate
+  unapproved tests to another agent or trigger them through CI or another tool.
+- Report tests not run and any resulting limits on the review. Do not stop an
+  otherwise useful review merely because tests were not authorized.
+
 ## Keep tests small and useful
 
 - Add a test only when it protects a meaningful scientific result, required behavior, or a plausible failure that existing tests do not cover.
@@ -60,7 +74,11 @@
 
 These apply to the session that coordinates the work, normally the main session. An implementer told not to run anything never reports work complete: it hands over with its checks marked unverified, and the coordinating session then runs the final verification.
 
-Before reporting work complete:
+For review-only tasks, the review rules above govern test execution. Inspect
+existing evidence and report checks not run; the completion criteria below do
+not authorize running tests during a review.
+
+Before reporting implementation work complete:
 
 1. Run targeted checks while iterating.
 2. Run one consolidated final verification command appropriate to the changed behavior. This does not require running the full suite or adding new tests. Run broader or expensive checks when the affected scientific computation or shared behavior warrants them.

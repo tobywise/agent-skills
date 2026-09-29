@@ -1,25 +1,42 @@
 ---
 name: review-implementation
-description: Review the current implementation against its plan, read-only, and report findings with severity, likelihood, and scientific tiers. Use when asked to review an implementation, check work against a plan, or re-review after fixes, or when the user invokes /review-implementation.
+description: Review pull requests, local implementation changes, or fixes against the applicable requirements. Use for code reviews and PR reviews, including requests to review and post to GitHub. Report findings with severity, likelihood, and scientific tiers when applicable; use github-pr-review only for the subsequent GitHub submission.
 ---
 
 # Review implementation
 
-Review the current worktree against the plan the user names. This is
-read-only: never edit files, write artifacts, or run tests. Report to the user.
+Review the requested PR or local changes. Keep the assessment read-only: do not
+edit source files or write review artifacts. Inspect existing test code and
+recorded results; run tests only when the user explicitly authorizes test
+execution for this review. A request to review, verify, or post findings is not
+that authorization. For authorized tests, follow `run-checks` and any tool
+restrictions; a coordinator can run checks a read-only reviewer cannot run.
 
-The plan's review standard, scope, contracts, required proof, forbidden
-patterns, and acceptance checklist are authoritative. Default a missing review
-standard to `GENERAL`. For `SCIENTIFIC_ANALYSIS`, load `scientific-analysis`;
+Use this skill for the assessment even when the user also asks to post it on
+GitHub. Complete the review first, then use `github-pr-review` to publish it.
+The read-only assessment ends before that separately authorized posting step.
+For a review or draft requested only in chat, report here without loading the
+posting skill.
+
+When a plan exists, its review standard, scope, contracts, required proof,
+forbidden patterns, and acceptance checklist are authoritative. Default a
+missing review standard to `GENERAL`. For `SCIENTIFIC_ANALYSIS`, load `scientific-analysis`;
 do not load it for `GENERAL`. Plans follow the `planning` format; load it if a
 section or field is unclear.
 
 ## Inputs
 
-- **Plan path** — required. If none is given and the request doesn't identify
-  one, ask for it once.
-- **Base** — optional ref to diff against. Default to the merge base with the
-  default branch, and state which base you used.
+- **PR** — use the supplied URL or number, or an unambiguous PR identified by
+  the request. Record its base and head commits. Review the changes from their
+  merge base to that head, with surrounding source from the same head. Do not
+  substitute unrelated local changes for the PR contents.
+- **Plan path** — use the supplied plan or one linked from the PR. For a PR
+  without a plan, use its stated requirements and repository instructions;
+  report `PLAN: none` and do not invent acceptance IDs. If the user explicitly
+  asks for comparison against a particular plan that cannot be found, ask for
+  its location.
+- **Base** — for local changes, use the supplied ref or the merge base with the
+  default branch. State the base and the scope of local changes reviewed.
 - **Previous review** — optional. If supplied, this is a re-review (see below).
 
 ## Inspecting
@@ -127,8 +144,10 @@ voice and common words. Explain the consequence; don't just repeat the evidence.
 
 ```text
 DECISION: APPROVE | REQUEST_CHANGES | ESCALATE
-PLAN:
+PLAN: <path, or none>
+PR: <URL, or local changes>
 BASE:
+HEAD: <reviewed commit; identify local changes when included>
 SUMMARY:
 PASSED: <acceptance IDs, or none>
 REVIEW_COVERAGE: <IDs and contracts inspected; anything omitted and why>

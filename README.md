@@ -44,10 +44,14 @@ Codex. Agents also load skills themselves when a task matches.
 
 | Review | |
 |---|---|
-| `review-implementation` | Read-only review of the current work against its plan |
+| `review-implementation` | Assess PRs or local changes against their requirements |
 | `scientific-risk-review` | Second opinion on whether a finding should really block |
-| `github-pr-review` | Draft or post GitHub PR reviews with evidence links and ratings |
+| `github-pr-review` | Publish completed reviews to GitHub with evidence links and ratings |
 | `pr-description` | Reviewer-focused PR description with a call-dependency diagram |
+
+For "review this PR and post the findings", use `review-implementation` first,
+then `github-pr-review` to publish the assessment. Reviews inspect existing
+test evidence; running tests requires explicit approval for that review.
 
 | Scientific work | |
 |---|---|
