@@ -6,6 +6,17 @@
 - If `cbrun` is on `PATH`, this machine is a controller for remote workers: never run those commands directly on it, unless the project's agent instructions say its checks run locally.
 - Do not install or synchronize dependencies during an implementation pass, except the project-locked setup that `run-checks` allows.
 
+## Keep tests small and useful
+
+- Add a test only when it protects a meaningful scientific result, required behavior, or a plausible failure that existing tests do not cover.
+- Before adding a test, inspect nearby coverage. Prefer extending or replacing an existing test over adding overlapping tests.
+- Do not add tests merely to exercise each new function, mirror the implementation, or check trivial details.
+- For each new test, state the failure it would catch and why existing tests would miss it. If that justification is weak, omit the test.
+- Use the smallest dataset and fewest repetitions that still expose the failure. Preserve the scientific properties needed to make the check meaningful.
+- Keep computationally demanding tests out of the routine suite unless their cost is justified by the failures they detect. Give them a separate command and state when they must run.
+- When changing tested behavior, remove obsolete coverage and consolidate overlapping tests.
+- Scientific validity checks and fail-fast behavior remain mandatory in the analysis itself; tests do not replace them.
+
 ## Pull requests
 
 - Before drafting or updating a pull request description — including a first `gh pr create`, a later `gh pr edit`, or any other point where PR body text gets written — apply the `pr-description` skill's drafting standard.
@@ -52,6 +63,6 @@ These apply to the session that coordinates the work, normally the main session.
 Before reporting work complete:
 
 1. Run targeted checks while iterating.
-2. Run one consolidated final verification command.
-3. Report the exact command and result.
+2. Run one consolidated final verification command appropriate to the changed behavior. This does not require running the full suite or adding new tests. Run broader or expensive checks when the affected scientific computation or shared behavior warrants them.
+3. Report the exact command, result, and any relevant checks not run.
 4. Distinguish test failure from environment, infrastructure, timeout, or cancellation failure.
