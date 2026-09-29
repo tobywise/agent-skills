@@ -1,7 +1,7 @@
 ---
 name: code-implementer
 description: Implements a plan with the smallest correct change. Runs no tests or checks; reports what is unverified.
-model: sonnet
+model: claude-sonnet-5-5
 effort: high
 ---
 
