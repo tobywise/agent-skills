@@ -1,9 +1,9 @@
 ---
 name: pr-description
-description: Draft a reviewer-focused pull request description from the current branch changes. Explain what changed and why in short, scannable prose, state whether scientific conclusions could change, identify risks and validation, and choose a compact call diagram, diff-style comparison, pseudocode explanation, or DAG when useful. Use when asked to write, improve, update, or review a PR description or explain a branch diff.
+description: Draft a reviewer-focused pull request description from the current branch changes. Explain what changed and why in short, scannable prose, classify scientific impact as NONE, MINOR, or MAJOR, identify risks and validation, and choose a compact call diagram, diff-style comparison, pseudocode explanation, or DAG when useful. Use when asked to write, improve, update, or review a PR description or explain a branch diff.
 metadata:
   compatibility: claude-code, codex, opencode, agent-skills
-  summary: Draft a reviewer-focused pull request description from the current branch changes, including an explicit scientific impact assessment, scannable explanations, and a source-verified explanation of changed logic in the format best suited to the PR.
+  summary: Draft a reviewer-focused pull request description from the current branch changes, including a one-word scientific impact rating, scannable explanations, and a source-verified explanation of changed logic in the format best suited to the PR.
   audience: scientists
   workflow: pull-request
 ---
@@ -97,11 +97,13 @@ When status is ambiguous, omit the status rather than guessing.
 
 ### 4. Assess impact and risk
 
-Start with scientific impact. Include a labelled `Scientific impact` statement near the top, using one assessment and a brief reason. Usually one or two sentences suffice; expand only to explain a material effect or uncertainty:
+Include `Scientific impact: NONE`, `Scientific impact: MINOR`, or `Scientific impact: MAJOR` near the top, followed by exactly one sentence in plain English explaining why. Rate the highest plausible effect of the whole PR on scientific results or conclusions:
 
-- **Could change scientific conclusions:** Identify the affected result or interpretation and how it could change. Use this for changes to data selection, preprocessing, models, estimation, uncertainty, comparisons, or reported results that could affect conclusions.
-- **No change to scientific conclusions expected:** Explain why. This can cover editorial documentation, formatting, tooling unrelated to the analysis, or code reorganization that preserves the analysis. A PR labelled "docs" or "refactoring" is not enough evidence on its own.
-- **Uncertain:** Name the unresolved scientific effect and the evidence needed to assess it. Use this when the available code or context does not support either assessment above.
+- **NONE:** No plausible change to scientific results or their interpretation. Explain what keeps the analysis unchanged; a "docs" or "refactoring" label alone is not evidence.
+- **MINOR:** A limited scientific result or its presentation could change, but the main conclusions are not expected to change. Name the affected result.
+- **MAJOR:** The main results or conclusions could change, or the available evidence cannot rule that out. Name the affected analysis or the uncertainty.
+
+Use only one of these three words as the rating. Do not add a second rating or a separate impact paragraph.
 
 Assess the whole PR: a scientific change remains relevant even if most files are documentation or cleanup. Documentation that changes analysis instructions or scientific interpretation can also affect conclusions.
 
@@ -219,8 +221,8 @@ Use these content requirements:
 
 - `Problem` states where the issue occurred in the research or analysis process, what was wrong, and why it could affect results or interpretation.
 - `Resolution` describes the conceptual correction and any important safeguard in terms of the model, analysis, data, or reported output rather than internal code architecture.
-- `Scientific impact` uses the assessment above and explains whether results or conclusions could change, with a concrete reason. Include it even for documentation or code reorganization.
-- Default to one short sentence per field; use a second sentence or brief `Resolution` bullets only when needed. Keep the TL;DR under 130 words. This is a ceiling, not a target; small changes need far less.
+- `Scientific impact` gives one rating and one plain-English sentence explaining the likely effect on results or conclusions, including for documentation or code reorganization.
+- Keep `Problem` short; use brief `Resolution` bullets only for distinct corrections. Keep the TL;DR under 130 words. This is a ceiling, not a target; small changes need far less.
 
 Use these language requirements:
 
@@ -251,7 +253,7 @@ For example, avoid a compressed TL;DR such as:
 >
 > **Resolution:** Remove unidentified perseveration sites, version and validate RL fit artifacts, and align highest-density and 2.5%/97.5% interval schemas with their authoritative producers.
 >
-> **Impact:** Perseveration outputs now expose only identified estimands, stale artifacts fail before publication, and recovery coverage consumes accurately named interval endpoints.
+> **Scientific impact: MAJOR** — Correcting estimated parameters and uncertainty ranges could change the main interpretation of these results.
 
 Write it for the intended reader instead:
 
@@ -263,7 +265,7 @@ Write it for the intended reader instead:
 > - Reject saved fits from incompatible code versions.
 > - Label uncertainty ranges to match their calculation.
 >
-> **Scientific impact:** Could change scientific conclusions. Removing meaningless estimates and correcting uncertainty labels could change how researchers interpret model results; no comparison of conclusions has been run.
+> **Scientific impact: MAJOR** — Removing meaningless estimates and correcting uncertainty labels could change how researchers interpret the model results.
 
 ## Output format
 
@@ -275,7 +277,7 @@ Produce copy-pasteable Markdown using the structure below. Omit optional section
 
 **Resolution:** <State the conceptual correction; use brief bullets for distinct corrections.>
 
-**Scientific impact:** <One assessment from the impact guidance, with a brief reason.>
+**Scientific impact: <NONE | MINOR | MAJOR>** — <One plain-English sentence explaining why.>
 
 ## What changed
 
@@ -368,7 +370,7 @@ Write instead:
 > - Record the owning process so `reapReservations()` can release reservations whose owner is gone.
 > - Update two callers to handle reservations ending when a worker exits.
 >
-> **Scientific impact:** No change to scientific conclusions expected. This changes worker cleanup; analysis inputs and calculations are unchanged.
+> **Scientific impact: NONE** — Worker cleanup changes, but the analysis inputs and calculations stay the same.
 
 ## Existing PR templates
 
@@ -395,7 +397,7 @@ Before returning the description, confirm that:
 
 - the comparison range is clear and the main changes are covered;
 - claims and any diagram or logic explanation match the available evidence;
-- scientific impact is explicit and distinguishes potential effects from observed changes;
+- scientific impact has exactly one rating—NONE, MINOR, or MAJOR—and one plain-English sentence explaining why;
 - validation accurately distinguishes checks run, results, and relevant checks not run;
 - the TL;DR meets its reading-level and length requirements;
 - the description follows the required template, is easy to scan, and contains no repetition or filler.
