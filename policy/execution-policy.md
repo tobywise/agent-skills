@@ -43,6 +43,15 @@
 - Scientific terms are fine; software-engineering jargon is not. Say what the code does, and name things after what they mean in the analysis, not after software patterns (for example, "participant data", not "data manager"). Follow the project's existing naming style.
 - Apply this to new or changed text; do not rename existing public names unless asked.
 
+## Didactic inline comments
+
+- Use a teaching style: help a scientist follow the analysis even if they are unfamiliar with the code or method. At important steps, explain what the step does, why it is needed, and how it affects the result or its interpretation.
+- Introduce the relevant scientific idea before a non-obvious calculation. Explain assumptions, units, thresholds, numerical choices, and constraints where they matter, including the reason for a validity check and what its failure means.
+- Connect the explanation to the quantities in the code. Use a small concrete example when it helps; for example, "Subtract the mean so zero represents the average observed value."
+- Put short explanations just above the relevant step or beside a short expression. For a calculation with several conceptual steps, use a few ordered comments to guide the reader through the reasoning.
+- Keep explanations concise and focused on understanding. Avoid narrating every line, repeating syntax, or copying whole docstrings; explain familiar operations when their scientific purpose or consequences need clarification.
+- Keep comments accurate when changing the code; update or remove explanations that no longer apply.
+
 ## Browser automation
 
 - Use Playwright only for web UI development or testing. It must be explicitly enabled by the web project's own agent configuration.
