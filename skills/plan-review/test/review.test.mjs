@@ -9,6 +9,7 @@ import { promisify } from "node:util";
 import vm from "node:vm";
 import { createReview, finishReview, importAnswers, loadReview, nextRound, readJson, reviewPaths, saveAnswer, submitRound, summarize, validatePlan } from "../scripts/review-data.mjs";
 import { exportPage, startServer } from "../scripts/review-server.mjs";
+import { startTailnetProxy } from "../scripts/tailnet-proxy.mjs";
 
 const runFile = promisify(execFile);
 const cli = new URL("../scripts/plan-review.mjs", import.meta.url).pathname;
@@ -97,6 +98,38 @@ test("server requires its token, local host, and same origin for writes", async 
       const accepted = await fetch(answerUrl, { method: "POST", headers: { Origin: address.origin, "Content-Type": "application/json" }, body: JSON.stringify({ decisionId: "first-decision", answer: { status: "ok", round: 1 } }) });
       assert.equal(accepted.status, 200);
     } finally {
+      await new Promise((resolve) => server.close(resolve));
+    }
+  });
+});
+
+test("tailnet proxy keeps the server's host and origin checks", async () => {
+  // The proxy opens the page to other devices, so it must only pass on
+  // requests made to its own address by this review's own page.
+  await withReview(async ({ root }) => {
+    const { server, url } = await startServer(root, "test-review");
+    const proxy = await startTailnetProxy(url, "127.0.0.1", 0);
+    try {
+      const shared = new URL(proxy.url);
+      assert.equal(shared.pathname, new URL(url).pathname);
+      assert.equal((await fetch(proxy.url)).status, 200);
+      const wrongHostStatus = await new Promise((resolve, reject) => {
+        const call = http.request(proxy.url, { headers: { Host: `example.com:${shared.port}` } }, (response) => {
+          response.resume();
+          response.on("end", () => resolve(response.statusCode));
+        });
+        call.on("error", reject);
+        call.end();
+      });
+      assert.equal(wrongHostStatus, 403);
+      const answerUrl = `${shared.origin}${shared.pathname.replace("/p/", "/api/")}/answer`;
+      const body = JSON.stringify({ decisionId: "first-decision", answer: { status: "ok", round: 1 } });
+      const post = (origin) => fetch(answerUrl, { method: "POST", headers: { ...(origin ? { Origin: origin } : {}), "Content-Type": "application/json" }, body });
+      assert.equal((await post()).status, 403);
+      assert.equal((await post("http://example.com")).status, 403);
+      assert.equal((await post(shared.origin)).status, 200);
+    } finally {
+      await new Promise((resolve) => proxy.server.close(resolve));
       await new Promise((resolve) => server.close(resolve));
     }
   });
