@@ -81,7 +81,7 @@
 
 ## Completion criteria
 
-These apply to the session that coordinates the work, normally the main session. An implementer told not to run anything never reports work complete: it hands over with its checks marked unverified, and the coordinating session then runs the final verification.
+These apply to the session that coordinates the work, normally the main session. An implementer never reports work complete: it may run the plan's targeted checks, then hands over with their results and anything still unverified, and the coordinating session runs the final verification.
 
 For review-only tasks, the review rules above govern test execution. Inspect
 existing evidence and report checks not run; the completion criteria below do

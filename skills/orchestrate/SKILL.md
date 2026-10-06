@@ -17,15 +17,18 @@ unclear.
 1. **Read the plan** and `git status --short`. Confirm the plan exists, is
    readable, and doesn't conflict with unrelated uncommitted work.
 2. **Implement.** Delegate to the `code-implementer` agent with the plan path,
-   or implement a small plan yourself. The implementer edits code and writes
-   tests but runs nothing; the main session owns verification.
+   or implement a small plan yourself. The implementer edits code, writes
+   tests, and runs `IMPLEMENTATION_CHECKS` at most twice; the main session
+   owns final verification.
 3. **Review.** Delegate to the `code-reviewer` agent with the plan path. It is
    read-only and returns `APPROVE`, `REQUEST_CHANGES`, or `ESCALATE`.
 4. **Settle disputed findings.** If the review raises blockers or risk
    candidates you or the user doubt, ask the `scientific-risk-reviewer` agent
    for a second opinion before acting on them.
 5. **Verify.** Run the plan's `IMPLEMENTATION_CHECKS` yourself, following the
-   `run-checks` skill.
+   `run-checks` skill. Skip this when the implementer's last run passed and
+   the code is unchanged since, under the reuse rule in
+   [Verification runs](#verification-runs).
 6. **Fix and re-review.** For `REQUEST_CHANGES` or a failing check, send the
    specific findings or failure back to the implementer, then re-review with
    the previous review supplied, so the reviewer checks only what changed.
@@ -38,8 +41,7 @@ load `review-implementation` or `scientific-risk-review` for those steps.
 ## When to stop and ask the user
 
 - The review returns `ESCALATE`, or a finding is a plan gap: the plan needs
-  revising, which `/create-plan` does as a new sibling file with the user's
-  approval.
+  revising, which `/create-plan` does in place with the user's approval.
 - The user would have to accept a blocker rather than fix it. Get a
   `scientific-risk-reviewer` acceptance review first, then let the user decide.
 - A check can't run within `run-checks`' limits, such as an intensive

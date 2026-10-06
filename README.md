@@ -37,7 +37,7 @@ Codex. Agents also load skills themselves when a task matches.
 |---|---|
 | `grill-me` | Interview you about a design until it's pinned down |
 | `plan-review` | Settle plan decisions over several rounds in a local HTML page |
-| `create-plan` | Write an implementation-ready plan, or a revised copy of one |
+| `create-plan` | Write an implementation-ready plan, or revise one |
 | `create-multiple-plans` | Split large work into ordered, independently useful plans |
 | `orchestrate` | Carry a plan through implement → review → verify from the main session |
 | `run-checks` | Run tests and builds locally, or on remote workers where they exist |
@@ -89,7 +89,7 @@ implementer follows the plan directly; the other agents load their skills.
 
 | Agent | Runs | Access |
 |---|---|---|
-| `code-implementer` | The supplied plan | Edits code and writes tests, runs nothing |
+| `code-implementer` | The supplied plan | Edits code, writes tests, runs the plan's targeted checks at most twice |
 | `code-reviewer` | `review-implementation` | Read-only (on Claude Code it keeps a shell for `git diff`) |
 | `scientific-risk-reviewer` | `scientific-risk-review` | Read-only, no shell |
 | `code-prototype` | `prototype` | Unrestricted. It asks you questions, so start it as the session (`claude --agent code-prototype`, or `/prototype` in OpenCode) rather than delegating to it. There's no Codex version; use the skill there. |

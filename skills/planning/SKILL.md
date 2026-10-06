@@ -26,8 +26,8 @@ labour.
   machinery, unless the user explicitly approves one integrated plan.
 
 Write one new lowercase-kebab-case Markdown file, normally one to three pages.
-Never edit, rename, replace, or delete an existing plan; to change one, see
-[Revising a plan](#revising-a-plan).
+To change an existing plan, revise that file in place (see
+[Revising a plan](#revising-a-plan)); never rename or delete a plan.
 
 ## Required sections
 
@@ -49,8 +49,9 @@ Never edit, rename, replace, or delete an existing plan; to change one, see
 
 ## Tests and verification
 
-The implementer writes the tests but never runs them. The main session runs
-these commands after review, following the `run-checks` skill.
+The implementer writes the tests and may run `IMPLEMENTATION_CHECKS` at most
+twice while implementing. The main session runs these commands after review,
+following the `run-checks` skill.
 
 ```text
 RUNNER: <how commands run, per run-checks: e.g. `uv run` locally, or cbrun-uv on Crabbox>
@@ -65,6 +66,7 @@ RUN_BUDGET: <expected number of check invocations, with a one-line justification
   plan alone, never left for whoever runs it to choose.
 - `IMPLEMENTATION_CHECKS` covers every acceptance item plus relevant
   regressions, in one invocation, cheapest first.
+- `RUN_BUDGET` counts the implementer's runs as well as the main session's.
 - `FINAL_SUITE` runs once the candidate is stable after review. A scientific
   `ONE_CALL` plan declares `FINAL_SUITE: REUSE_IMPLEMENTATION_CHECK` instead.
 - Static checks and source inspection cannot prove executable behaviour.
@@ -129,21 +131,23 @@ If inspection shows the approved split no longer holds, stop and say why.
 
 ## Revising a plan
 
-A plan is never edited in place. When the user asks for a revision — usually
-after a review finds a plan gap — write a sibling file with the next free
-suffix (`feature.md` → `feature-v2.md` → `feature-v3.md`) and leave the
-original untouched.
+When the user asks for a revision — usually after a review finds a plan gap —
+edit the plan file itself, so there is always one current plan.
 
-- Open the new plan with `Revises: <original path>` and a short list of what
-  changed and why, citing the review finding IDs.
+- Keep a `Revisions` list directly under the title. Add one entry per
+  revision: its number, what changed, and why, citing the review finding IDs.
 - Change only what the revision needs. Keep unaffected contracts, acceptance
   IDs, and commands verbatim so earlier reviews stay traceable.
+- IDs are permanent. Mark a removed item `Retired in revision N` in place,
+  keep its ID, and give new items the next unused number.
 - An operational correction — a command, argument, runner, input, or budget —
   can be made as requested. A substantive one — scope, semantics, authority,
   design, scientific policy, or a hard limit — needs the user's explicit
   approval first.
 - Removing a contract also removes proof and machinery needed only for it.
   Never remove scientific correctness, validity, fail-fast, or required proof.
+- Older plans may have `-v2` or `-v3` siblings; the highest suffix is the
+  current plan. Revise that file in place.
 
 ## After writing
 
