@@ -1,2 +1,14 @@
 node_modules/
 .DS_Store
+
+# Third-party skills that `npx skills add` installs here, because
+# ~/.agents/skills links to this repository's skills/ folder.
+skills/find-skills/
+skills/handoff/
+skills/improve-codebase-architecture/
+skills/retro/
+skills/wait-what/
+skills/writing-for-agents/
+skills/prototype/LOGIC.md
+skills/prototype/UI.md
+skills/prototype/agents/
