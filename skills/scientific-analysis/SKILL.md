@@ -71,11 +71,14 @@ solely because an internal component could be reused.
 
 `SINGLE_USE` normally uses `ONE_CALL`. Its `IMPLEMENTATION_CHECKS` must combine
 all implementation-tier acceptance checks and relevant regressions in one exact
-command. The plan then declares:
+command. When that command also runs the project's full suite, as is common
+for a small single-use project, the plan declares:
 
 ```text
 FINAL_SUITE: REUSE_IMPLEMENTATION_CHECK
 ```
+
+Otherwise `FINAL_SUITE` names the full suite, which runs once at the end.
 
 Use `STANDARD` for `REUSABLE` work or whenever one comprehensive call cannot
 provide credible proof; it keeps separate `IMPLEMENTATION_CHECKS` and

@@ -33,7 +33,8 @@ unclear.
    specific findings or failure back to the implementer, then re-review with
    the previous review supplied, so the reviewer checks only what changed.
 7. **Finish.** Once review approves and checks pass, run `FINAL_SUITE` once
-   (or skip it when the plan says `REUSE_IMPLEMENTATION_CHECK`) and report.
+   and report. Skip it only when the plan says `REUSE_IMPLEMENTATION_CHECK`
+   and that command passed on the final code.
 
 If an agent isn't available on this platform, do implementation yourself or
 load `review-implementation` or `scientific-risk-review` for those steps.

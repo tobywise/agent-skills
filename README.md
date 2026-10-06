@@ -40,7 +40,7 @@ Codex. Agents also load skills themselves when a task matches.
 | `create-plan` | Write an implementation-ready plan, or revise one |
 | `create-multiple-plans` | Split large work into ordered, independently useful plans |
 | `orchestrate` | Carry a plan through implement → review → verify from the main session |
-| `run-checks` | Run tests and builds locally, or on remote workers where they exist |
+| `run-checks` | Run the relevant tests while iterating and the full suite at the end, locally or on remote workers |
 
 | Review | |
 |---|---|

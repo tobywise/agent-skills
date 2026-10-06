@@ -57,7 +57,7 @@ following the `run-checks` skill.
 RUNNER: <how commands run, per run-checks: e.g. `uv run` locally, or cbrun-uv on Crabbox>
 REQUIRED_INPUTS: <data, credentials, or services the checks need, or none>
 DEFERRED_INPUTS: <inputs deliberately left out of these checks, or none>
-IMPLEMENTATION_CHECKS: <one exact command: cheap, targeted checks first>
+IMPLEMENTATION_CHECKS: <one exact command for the targeted selection: the tests covering the change, cheapest first>
 FINAL_SUITE: <one exact command for the full suite>
 RUN_BUDGET: <expected number of check invocations, with a one-line justification>
 ```
@@ -65,10 +65,13 @@ RUN_BUDGET: <expected number of check invocations, with a one-line justification
 - Every command is exact and complete. Its coverage must be reviewable from the
   plan alone, never left for whoever runs it to choose.
 - `IMPLEMENTATION_CHECKS` covers every acceptance item plus relevant
-  regressions, in one invocation, cheapest first.
+  regressions, in one invocation, cheapest first. It names its tests by file,
+  test ID, or marker; when it runs the full suite instead, the plan states
+  which `run-checks` reason applies.
 - `RUN_BUDGET` counts the implementer's runs as well as the main session's.
-- `FINAL_SUITE` runs once the candidate is stable after review. A scientific
-  `ONE_CALL` plan declares `FINAL_SUITE: REUSE_IMPLEMENTATION_CHECK` instead.
+- `FINAL_SUITE` runs once the candidate is stable after review, for any change
+  to executable behaviour. Declare `FINAL_SUITE: REUSE_IMPLEMENTATION_CHECK`
+  only when `IMPLEMENTATION_CHECKS` itself runs the full suite.
 - Static checks and source inspection cannot prove executable behaviour.
 - Name the project's locked linter and formatter where they apply.
 - Older plans may say `REMOTE_BUDGET` and `Remote validation`; they mean

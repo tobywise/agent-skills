@@ -89,7 +89,7 @@ not authorize running tests during a review.
 
 Before reporting implementation work complete:
 
-1. Run targeted checks while iterating.
-2. Run one consolidated final verification command appropriate to the changed behavior. This does not require running the full suite or adding new tests. Run broader or expensive checks when the affected scientific computation or shared behavior warrants them.
+1. Run a targeted selection of tests while iterating, following `run-checks`.
+2. Once the code is stable, run the full suite once, following `run-checks`. A passing run on unchanged code can be reused; work with no executable behavior, such as documentation only, is exempt. Also run broader or expensive checks, such as demanding tests kept out of the routine suite, when the affected scientific computation or shared behavior warrants them.
 3. Report the exact command, result, and any relevant checks not run.
 4. Distinguish test failure from environment, infrastructure, timeout, or cancellation failure.

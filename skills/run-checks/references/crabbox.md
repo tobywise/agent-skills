@@ -93,8 +93,11 @@ Minimize remote invocations.
 Preferred:
 
 ```bash
-cbrun-uv bash -lc 'set -Eeuo pipefail; uv run ruff check .; uv run pytest'
+cbrun-uv bash -lc 'set -Eeuo pipefail; uv run ruff check .; uv run pytest tests/test_fit.py tests/test_io.py'
 ```
+
+This runs a targeted selection; the full suite runs once at the end, as
+`run-checks` describes.
 
 Avoid separate cold starts for each test file or check. Let command output stream normally; do not pipe long-running commands through `head`, `tail`, or `grep` unless necessary.
 
