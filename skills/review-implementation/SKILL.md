@@ -81,7 +81,7 @@ Read or glob every plan-named implementation and test path directly. A file
 missing from `git status` or the diff is not missing from the worktree — an
 unchanged tracked file is real and present. A test that an implementation
 acceptance item explicitly requires is a blocking defect only when it is
-genuinely absent from the worktree.
+genuinely absent from the worktree or fails to establish the required behavior.
 
 Inspect every acceptance ID and relevant contract even after finding a
 blocker. `REVIEW_COVERAGE` must name each one you inspected.
@@ -90,6 +90,43 @@ Use [review ratings](references/ratings.md) for every finding and risk
 candidate. State severity, likelihood, and a short evidence-based reason for
 each. The ratings describe impact and exposure; they do not replace the
 blocking rules below.
+
+## Test quality
+
+Inspect new and changed tests alongside nearby coverage and the behavior they
+claim to verify. Assess this from the code and recorded results; these checks
+do not authorize test execution.
+
+- **Useful coverage:** Identify the meaningful result, required behavior, or
+  plausible failure each test protects, and why existing tests would miss it.
+  Flag overlapping cases, obsolete assertions, and tests of trivial details
+  that add upkeep without distinct protection. Prefer extending or
+  consolidating existing coverage over adding more tests.
+- **Independent expectations:** Look for tautological tests: comparing a value
+  with itself, deriving the expected answer through the same calculation being
+  tested, or replacing the behavior under test with a mock and asserting its
+  configured answer. Expected results should have an independent basis, such
+  as a hand-calculated example, a trusted reference, or a scientific property.
+  Sharing setup helpers is not itself a defect; trace whether the same mistake
+  could affect both the actual and expected results and leave the test passing.
+- **Effective assertions:** Name a concrete wrong behavior and trace whether
+  the test would fail for it. Check for assertions that are never reached,
+  swallowed failures, overly broad exception checks, tolerances that admit
+  materially wrong answers, and checks of only shape or existence when values
+  matter. Judge mocks and assertions against the test's stated purpose; a
+  shape check is useful when shape is the required behavior.
+- **Proportionate cost:** Question unnecessary data volume, repetitions,
+  setup, dependencies, and helper layers. Prefer the smallest case that still
+  exposes the failure and preserves the relevant scientific properties.
+  Expensive tests need a distinct benefit; keep them outside the routine suite
+  unless their cost is justified, with a separate command and a stated reason
+  to run them.
+
+For a test-quality finding, cite the missed failure or redundant coverage and
+recommend the smallest useful correction, replacement, consolidation, or
+removal. Apply the blocking rules below; test count, line count, and stylistic
+preferences alone do not justify a blocker. Include test quality and any limits
+of that assessment in `REVIEW_COVERAGE`.
 
 ## What blocks
 
