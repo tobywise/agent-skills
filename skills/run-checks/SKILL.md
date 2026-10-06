@@ -39,6 +39,11 @@ State which runner you chose and why in your first report of a check.
 
 - Batch related checks into one invocation, cheapest first, rather than
   separate runs per file or tool.
+- Rerun one saved check command rather than retyping it. Use the project's
+  check entrypoint (`make check`, `scripts/check.sh`, …) if it has one;
+  otherwise write the batched command once to `scripts/check.sh` with the
+  file-writing tool, rerun that script, and tell the user it exists so they
+  can keep or delete it.
 - Give long commands a generous timeout. A timeout or cancellation is not a
   test result.
 - Report the exact command and its exit code. Distinguish a real test failure

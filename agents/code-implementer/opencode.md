@@ -13,7 +13,9 @@ Read the supplied plan and `git status --short`. Implement its `IMPLEMENTATION`
 acceptance items with the smallest correct change, including required tests.
 Keep to its scope and forbidden patterns, preserve unrelated work, and leave
 the plan itself untouched. Stop and report ambiguity, a structural problem,
-or work outside the plan instead of guessing.
+or work outside the plan instead of guessing. Create and change files with
+the file-editing tools; isolated copies of the repository refuse shell
+writes such as heredocs, `>` redirection, or `sed -i`.
 
 Do not run tests, builds, or other checks. Report changes by path and list the
 exact verification commands as unverified. Leave `INTERPRETATION` and

@@ -24,6 +24,8 @@ Read by `run-checks` when `cbrun` is on `PATH`. The general rules in
 
 Use `cbrun [--once] COMMAND ...` for general remote commands.
 
+`cbrun` and `cbrun-uv` take no options except `--once`: every other argument, `--help` included, runs as a command on a newly provisioned worker. Their usage is documented here; never run them to discover it.
+
 For Python projects with both `pyproject.toml` and `uv.lock`, prefer `cbrun-uv [--once] COMMAND ...` and run Python tools through `uv run`.
 
 Do not invoke raw `crabbox run` or `crabbox warmup`. Read-only raw Crabbox diagnostics are allowed only when explicitly debugging infrastructure. Do not nest wrappers.
@@ -78,7 +80,9 @@ Do not use several separate one-shot commands for related checks. Batch them int
 ## Timeouts
 
 - Cold GCP provisioning may take 60-120 seconds before repository sync begins.
-- Give any Crabbox shell command at least a 600 second timeout; prefer 900 seconds for cold Python runs or full test suites. Where the shell tool takes an explicit timeout, set it; where it does not, do not treat a slow command as hung.
+- Give any Crabbox shell command at least a 600 second timeout. Where the shell tool takes an explicit timeout, set it; where it does not, do not treat a slow command as hung.
+- If a run may outlast the shell tool's foreground limit (600 seconds in Claude Code; cold Python runs and full test suites often do), start it in the background from the outset and wait for its exit notification. Waiting on that notification replaces polling with `sleep` or `until grep` loops.
+- A foreground run moved to the background at the limit is still running: wait for it rather than starting it again.
 - Do not cancel a command merely because provisioning or SSH bootstrap appears slow.
 - A timeout or cancellation is not a test result.
 
