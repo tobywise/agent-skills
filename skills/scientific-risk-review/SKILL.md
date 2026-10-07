@@ -35,7 +35,7 @@ don't turn this into a second full code review.
   owner to decide.
 
 Under `SCIENTIFIC_ANALYSIS`, **never downgrade** an actual failed or invalid
-computation, non-convergence, missing required result, incomplete candidate set,
+computation, unreported non-convergence, missing required result, incomplete candidate set,
 failed validity gate, fail-fast violation, or explicit scientific-validity
 requirement. A newly discovered concern must meet the same evidence standard.
 
@@ -72,8 +72,8 @@ and whether it can be corrected.
   protection requirement.
 
 An actual failed calculation, missing required result, invalid estimate,
-non-convergence, incomplete required candidate set, or failed validity check is
-not a *possible* risk — send it back as a direct finding.
+unreported non-convergence, incomplete required candidate set, or failed
+validity check is not a *possible* risk — send it back as a direct finding.
 
 ```text
 ASSESSMENTS:
@@ -106,7 +106,7 @@ When the user is considering accepting a blocker rather than fixing it.
   assessed from what's available.
 
 Under `SCIENTIFIC_ANALYSIS`, always return `NOT_ACCEPTABLE` for an actual failed
-or invalid computation, non-convergence, missing required result, incomplete
+or invalid computation, unreported non-convergence, missing required result, incomplete
 required candidate set, failed validity gate, fail-fast violation, or explicit
 scientific-validity requirement. Never infer that a failed check passed, and
 never rewrite or close the finding.

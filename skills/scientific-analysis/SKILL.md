@@ -114,7 +114,7 @@ the effect changes the calculation rather than only labels and records.
 The original reviewer describes the condition and evidence, and gives
 provisional ratings. It does not decide whether a possible risk blocks
 implementation. An actual failed calculation,
-missing required result, invalid estimate, non-convergence, incomplete required
+missing required result, invalid estimate, unreported non-convergence, incomplete required
 candidate set, or failed validity check is not a possible risk: it remains a
 direct blocking implementation failure.
 

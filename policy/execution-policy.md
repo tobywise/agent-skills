@@ -68,10 +68,11 @@
 
 ## Scientific fail-fast policy
 
-- In supported scientific workflows, a failed or invalid computation is an `IMPLEMENTATION` failure, even when diagnostics or model comparison are otherwise `INTERPRETATION`. This includes fit errors, reported non-convergence, invalid or missing required estimates, failed required diagnostics, explicit validity-gate failures, and incomplete required candidate sets.
+- In supported scientific workflows, a failed or invalid computation is an `IMPLEMENTATION` failure, even when diagnostics or model comparison are otherwise `INTERPRETATION`. This includes fit errors, invalid or missing required estimates, failed required diagnostics, explicit validity-gate failures, and incomplete required candidate sets.
 - Fail at first detection with an exception or nonzero exit. Identify the failed stage or candidate, preserve the cause, and do not treat partial outputs as successful.
 - Never catch-and-warn, skip the failed unit, substitute another model or settings, continue with an incomplete candidate set, or ask whether to proceed. Exhausted method-defined retries must fail.
 - A computation that completes validly but produces poor fit or unfavorable evidence remains a scientific result unless an explicit validity gate says otherwise.
+- Non-convergence is not fatal by default. It is useful evidence for model selection and development, for example that a model is poorly identified. Record it for each fit and report it visibly with that fit's results; never hide it, silently drop the fit, or silently change settings to make it converge. It fails only when an explicit validity gate requires convergence.
 - Plans, implementations, reviews, and orchestration must enforce this rule. Never downgrade a scientific validity failure to `INTERPRETATION`, `UNVERIFIED`, deferred work, a warning, or residual risk.
 
 ## Scientific prototype workflow

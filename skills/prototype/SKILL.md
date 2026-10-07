@@ -57,9 +57,11 @@ mutate external systems.
 Stay strict about data identity and coding, equations, likelihoods and
 transforms, required candidates and estimands, seeds, package and runtime
 identity, supported outputs, reproducibility, and visible failure. A required
-fit error, non-convergence, invalid or missing estimate, failed validity gate,
-or incomplete candidate set must raise or exit nonzero. Never catch-and-warn,
-skip, substitute a method, or present partial output as success.
+fit error, invalid or missing estimate, failed validity gate, or incomplete
+candidate set must raise or exit nonzero. Never catch-and-warn, skip,
+substitute a method, or present partial output as success. Non-convergence
+does not stop the run unless a validity gate requires convergence; record and
+report it with each fit's results.
 
 Inspect the completed diff and self-audit the scientific path before execution.
 To run it now, follow `run-checks` and use at most two top-level run

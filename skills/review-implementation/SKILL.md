@@ -165,7 +165,7 @@ For scientific plans, give every finding a tier:
 Vague "plausible", "adequate", or "robust" goals without quantitative truth are
 non-blocking `INTERPRETATION`, not a missing test oracle.
 
-**Never downgrade** an actual failed or invalid computation, non-convergence,
+**Never downgrade** an actual failed or invalid computation, unreported non-convergence,
 missing required estimate, incomplete required candidate set, failed validity
 gate, or fail-fast violation. These are always `IMPLEMENTATION` blockers.
 
