@@ -75,7 +75,21 @@ Prefer symbol-aware search tools, when available, over paging whole files.
 
 Inspect the diff, scope, contracts, required proof, forbidden patterns,
 visible failure behavior, and agreement between analogous paths. Do not reward
-partial work because tests pass.
+partial work because tests pass. Also check:
+
+- **Required estimates:** Trace each required estimate from where it is
+  computed to where it is saved, through unchanged code as well as the diff.
+  Look for branches that silently skip it, such as a `continue`, an empty
+  default, or a filter that drops rows without raising.
+- **Dropped units:** When a whole unit drops out, such as a participant with
+  no sessions left after exclusions, check what happens to every count,
+  denominator, and index that depends on it.
+- **Output sets:** A script that writes several output files must publish all
+  of them or none. A failure partway through must not leave a mix of new and
+  stale files that looks like a complete result.
+- **Teaching comments:** Key scientific steps need the teaching comments the
+  global policy requires: what the step does, why it is needed, and how it
+  affects the result.
 
 Read or glob every plan-named implementation and test path directly. A file
 missing from `git status` or the diff is not missing from the worktree — an
@@ -134,7 +148,8 @@ Block only for an observed or deterministic harmful failure on a supported
 path, or failure of an explicit implementation requirement. That includes data
 identity and coding, equations, likelihoods, parameter transforms, primary
 estimands, supported outputs, reproducibility, reliable verification, and
-scope.
+scope. Any deviation from a value a contract names, such as a threshold, seed,
+tolerance, or column name, blocks, however small.
 
 Every blocking finding needs its supported path, concrete harm, evidence,
 minimal fix, and closing proof. A missing dedicated test is not a defect unless
@@ -149,9 +164,10 @@ Treat complexity-budget figures as estimates unless the user or an external
 authority has declared a limit hard. A plan label such as `hard` or `at most`
 doesn't establish that on its own. Numeric variance alone is non-blocking; it
 blocks only with concrete scope, duplication, support-burden, or reviewability
-harm. Other design-invalidating evidence includes a second source of truth,
-partial support presented as compatibility, self-referential proof of a core
-result, or a contradiction between the plan's stated risk and the code.
+harm. Other design-invalidating evidence includes a second source of truth
+(a copied default or constant counts as one), partial support presented as
+compatibility, self-referential proof of a core result, or a contradiction
+between the plan's stated risk and the code.
 
 ## Scientific tiers
 
