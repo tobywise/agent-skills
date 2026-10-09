@@ -37,6 +37,11 @@
 - Load that skill and apply it directly in the current session. Do not delegate it to a subagent or treat it as a separate command a user has to invoke.
 - This applies whenever a PR is being opened or its description written, in any project, not only when the user explicitly asks for a PR description.
 
+## Issues for problems found along the way
+
+- When you notice a problem outside the task's scope, leave it unfixed and note it as a candidate GitHub issue. Problems inside the scope are still part of the work.
+- Subagents list candidate issues in their hand-over. The coordinating session checks open issues for duplicates, then proposes the rest in its final report, each with a title and evidence, and opens only those the user approves.
+
 ## Plain language
 
 - Readers are scientists, not software engineers. Write everything a person reads in plain English (ISO 24495-1): docs, comments, docstrings, messages, and the names of functions, variables, and files.
