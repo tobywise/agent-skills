@@ -42,6 +42,15 @@
 - When you notice a problem outside the task's scope, leave it unfixed and note it as a candidate GitHub issue. Problems inside the scope are still part of the work.
 - Subagents list candidate issues in their hand-over. The coordinating session checks open issues for duplicates, then proposes the rest in its final report, each with a title and evidence, and opens only those the user approves.
 
+## Steps only the user can do
+
+- When the work needs a step you cannot do yourself, such as a run on an HPC cluster, access to restricted data, or a judgement by eye, track it in GitHub as a `needs-human` issue rather than only mentioning it in a report or comment. Open these issues without asking.
+- Open one issue per step, assigned to `@me` with the label `needs-human`; create the label with `gh label create needs-human --force` if the repository lacks it. Check open `needs-human` issues first so you do not duplicate one. The issue states where to run the step, the exact commands, the expected output or how to judge success, and what to do with the results.
+- When the step must happen before a pull request merges, link the issue in the PR body and set a pending commit status on the PR's head commit. Name the status after the kind of step, such as `hpc-validation`, reusing the name the repository already uses for that kind:
+  `gh api repos/OWNER/REPO/statuses/SHA -f state=pending -f context=hpc-validation -f description="Waiting on #N"`
+  End the issue with the matching `state=success` command so the user can clear it when done. A status belongs to one commit: after a push that could change the step's result, set it to pending again on the new head and comment on the issue that the step must be redone.
+- Subagents list such steps in their hand-over. The coordinating session opens the issues and links them in its final report.
+
 ## Plain language
 
 - Readers are scientists, not software engineers. Write everything a person reads in plain English (ISO 24495-1): docs, comments, docstrings, messages, and the names of functions, variables, and files.
