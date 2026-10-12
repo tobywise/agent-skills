@@ -55,6 +55,7 @@
 
 - Readers are scientists, not software engineers. Write everything a person reads in plain English (ISO 24495-1): docs, comments, docstrings, messages, and the names of functions, variables, and files.
 - Scientific terms are fine; software-engineering jargon is not. Say what the code does, and name things after what they mean in the analysis, not after software patterns (for example, "participant data", not "data manager"). Follow the project's existing naming style.
+- Write prose with the ASD-STE100 Simplified Technical English writing rules. Keep accurate scientific terms even where STE's word list lacks them.
 - Apply this to new or changed text; do not rename existing public names unless asked.
 
 ## Didactic inline comments
