@@ -89,6 +89,12 @@
 - Non-convergence is not fatal by default. It is useful evidence for model selection and development, for example that a model is poorly identified. Record it for each fit and report it visibly with that fit's results; never hide it, silently drop the fit, or silently change settings to make it converge. It fails only when an explicit validity gate requires convergence.
 - Plans, implementations, reviews, and orchestration must enforce this rule. Never downgrade a scientific validity failure to `INTERPRETATION`, `UNVERIFIED`, deferred work, a warning, or residual risk.
 
+## Statistical consistency
+
+- Within a project, summarise results the same way throughout: one interval type (for example highest-density or equal-tailed), one interval width, one kind of point estimate, and the same diagnostic thresholds and significance level. Depart from this only when the user or project says so.
+- Before reporting a result, use the project's existing convention. When there is none, ask the user and record the answer in the project's agent instructions. Set these values in one place in the code, not through library or skill defaults, which vary (ArviZ moved from 94% highest-density to 89% equal-tailed in version 1.0).
+- Treat a departure from the project's convention as a review finding.
+
 ## Scientific prototype workflow
 
 - A run of the `prototype` skill that declares `WORKFLOW: RAPID_SCIENTIFIC_PROTOTYPE` may relax this policy's rules on plans, unit tests, the full suite, Python docstrings, and dependency declarations, exactly as that skill specifies. Follow the skill for everything else about prototypes.
