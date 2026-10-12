@@ -35,7 +35,6 @@ Codex. Agents also load skills themselves when a task matches.
 
 | Plan and build | |
 |---|---|
-| `grill-me` | Interview you about a design until it's pinned down |
 | `plan-review` | Settle plan decisions over several rounds in a local HTML page |
 | `create-plan` | Write an implementation-ready plan, or revise one |
 | `create-multiple-plans` | Split large work into ordered, independently useful plans |
@@ -73,7 +72,7 @@ Paseo sessions and `LANGSMITH_API_KEY`. Delete them if you don't use that.</sub>
 
 ```mermaid
 flowchart LR
-    A["/grill-me"] --> B["/create-plan"] --> C["/orchestrate"]
+    B["/create-plan"] --> C["/orchestrate"]
     C --> D["code-implementer"] --> E["code-reviewer"]
     E -- changes needed --> D
     E -- approved --> F["run-checks"]
