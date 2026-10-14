@@ -1,10 +1,11 @@
 # agent-skills
 
-**One set of skills, agents and instructions for Claude Code, Codex and OpenCode.**
+**One set of skills, agents and instructions for Claude Code, Codex, OpenCode and Antigravity.**
 
 ![Claude Code](https://img.shields.io/badge/Claude_Code-supported-D97757)
 ![Codex](https://img.shields.io/badge/Codex-supported-10A37F)
 ![OpenCode](https://img.shields.io/badge/OpenCode-supported-4B5563)
+![Antigravity](https://img.shields.io/badge/Antigravity-supported-4285F4)
 ![Agent Skills](https://img.shields.io/badge/format-Agent_Skills-2563EB)
 ![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)
 
@@ -30,8 +31,8 @@ GNU `findutils` and a current `bash`.
 
 ## Skills
 
-Invoke a skill as `/name` in Claude Code and OpenCode, or ask for it by name in
-Codex. Agents also load skills themselves when a task matches.
+Invoke a skill as `/name` in Claude Code, OpenCode and Antigravity, or ask for
+it by name in Codex. Agents also load skills themselves when a task matches.
 
 | Plan and build | |
 |---|---|
@@ -89,9 +90,13 @@ implementer follows the plan directly; the other agents load their skills.
 | Agent | Runs | Access |
 |---|---|---|
 | `code-implementer` | The supplied plan | Edits code, writes tests, runs the plan's targeted checks at most twice |
-| `code-reviewer` | `review-implementation` | Read-only (on Claude Code it keeps a shell for `git diff`) |
+| `code-reviewer` | `review-implementation` | Read-only (on Claude Code and Antigravity it keeps a shell for `git diff`) |
 | `scientific-risk-reviewer` | `scientific-risk-review` | Read-only, no shell |
-| `code-prototype` | `prototype` | Unrestricted. It asks you questions, so start it as the session (`claude --agent code-prototype`, or `/prototype` in OpenCode) rather than delegating to it. There's no Codex version; use the skill there. |
+
+Antigravity agents can't name a model; they choose only `inherit`, `flash` or
+`pro`. Its agents use `inherit`, so they run on the session's model. Set that
+with `"model"` in `~/.gemini/antigravity-cli/settings.json` or `agy --model`.
+| `code-prototype` | `prototype` | Unrestricted. It asks you questions, so start it as the session (`claude --agent code-prototype`, `agy --agent code-prototype`, or `/prototype` in OpenCode) rather than delegating to it. There's no Codex version; use the skill there. |
 
 ## Always-on policy (optional)
 
@@ -126,10 +131,12 @@ Checks in this repository run locally, even where Crabbox is available.
 ## How it's wired
 
 ```
-skills/<name>/SKILL.md        →  ~/.agents/skills (Codex, OpenCode) and ~/.claude/skills/<name>
+skills/<name>/SKILL.md        →  ~/.agents/skills (Codex, OpenCode), ~/.gemini/config/skills
+                                 (Antigravity) and ~/.claude/skills/<name>
 agents/<name>/claude.md       →  ~/.claude/agents/<name>.md
 agents/<name>/opencode.md     →  ~/.config/opencode/agents/<name>.md
 agents/<name>/codex.toml      →  ~/.codex/agents/<name>.toml
+agents/<name>/antigravity.md  →  ~/.gemini/config/agents/<name>.md
 commands/opencode/<name>.md   →  ~/.config/opencode/commands/<name>.md
 policy/execution-policy.md    →  each platform's global instructions (--with-policy)
 ```
@@ -138,8 +145,8 @@ policy/execution-policy.md    →  each platform's global instructions (--with-p
 > Everything is a symlink into this checkout, so **switching branches switches
 > what every platform runs**.
 
-Override install locations with `AGENTS_HOME`, `CLAUDE_HOME`, `CODEX_HOME` or
-`OPENCODE_HOME`.
+Override install locations with `AGENTS_HOME`, `CLAUDE_HOME`, `CODEX_HOME`,
+`OPENCODE_HOME` or `ANTIGRAVITY_HOME`.
 
 ## Adding your own
 
@@ -149,7 +156,7 @@ Override install locations with `AGENTS_HOME`, `CLAUDE_HOME`, `CODEX_HOME` or
   bundled files as `~/.agents/skills/<name>/…`, not by a platform-specific
   variable.
 - **OpenCode command:** add `commands/opencode/<name>.md` whose body loads the
-  skill. Claude Code and Codex need nothing extra.
+  skill. Claude Code, Codex and Antigravity need nothing extra.
 - **Agent:** put its instructions in a skill, then add `agents/<name>/` with
   a file for each platform you want. Copy an existing agent as a template.
 
@@ -170,9 +177,10 @@ platform itself:
 | Claude Code | listed at session start | `claude --agent x -p hi` errors with the list |
 | Codex | `codex debug prompt-input` | ask which agent types `spawn_agent` accepts |
 | OpenCode | `opencode debug skill` | `opencode debug config` |
+| Antigravity | `/skills` in a session | `/agents` in a session |
 
-For the policy, `codex debug prompt-input` shows it; on Claude Code and
-OpenCode, ask the agent to quote a line of it.
+For the policy, `codex debug prompt-input` shows it; on Claude Code, OpenCode
+and Antigravity, ask the agent to quote a line of it.
 
 </details>
 
@@ -197,10 +205,11 @@ OpenCode, ask the agent to quote a line of it.
 <summary><strong>Uninstall</strong></summary>
 
 ```sh
-rm ~/.agents/skills
+rm ~/.agents/skills ~/.gemini/config/skills
 for l in ~/.claude/skills/* ~/.claude/agents/* ~/.codex/agents/* \
          ~/.config/opencode/agents/* ~/.config/opencode/commands/* \
-         ~/.codex/AGENTS.md ~/.config/opencode/AGENTS.md; do
+         ~/.gemini/config/agents/* ~/.codex/AGENTS.md \
+         ~/.config/opencode/AGENTS.md ~/.gemini/config/AGENTS.md; do
   [ -L "$l" ] && case "$(readlink "$l")" in */agent-skills/*) rm "$l";; esac
 done
 ```

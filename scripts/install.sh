@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
 #
 # Install this repo's skills, agents, OpenCode commands and (optionally) policy
-# for every platform on this machine: Claude Code, Codex and OpenCode.
+# for every platform on this machine: Claude Code, Codex, OpenCode and
+# Antigravity.
 #
 # Skills follow the Agent Skills standard (agentskills.io): one directory per
 # skill, each containing SKILL.md. Codex and OpenCode both scan ~/.agents/skills
-# natively, so a single directory symlink serves both. Claude Code only scans
-# ~/.claude/skills, so it gets one symlink per skill.
+# natively, so a single directory symlink serves both. Antigravity scans
+# ~/.gemini/config/skills, which also takes one directory symlink. Claude Code
+# only scans ~/.claude/skills, so it gets one symlink per skill.
 #
-#   ~/.agents/skills        -> <repo>/skills          (Codex, OpenCode)
-#   ~/.claude/skills/<name> -> <repo>/skills/<name>   (Claude Code)
+#   ~/.agents/skills         -> <repo>/skills          (Codex, OpenCode)
+#   ~/.gemini/config/skills  -> <repo>/skills          (Antigravity)
+#   ~/.claude/skills/<name>  -> <repo>/skills/<name>   (Claude Code)
 #
 # Everything is a symlink into this working tree, so an edit here is live in the
 # next session of every platform, and `git status` shows what they are running.
@@ -25,7 +28,7 @@ for arg in "$@"; do
     -h|--help)
       printf 'usage: %s [--with-policy]\n\n' "$0"
       printf '  --with-policy  also install policy/execution-policy.md as the always-on\n'
-      printf '                 instructions for Claude Code, Codex and OpenCode\n'
+      printf '                 instructions for Claude Code, Codex, OpenCode and Antigravity\n'
       exit 0 ;;
     *) printf 'error: unknown argument: %s\n' "$arg" >&2; exit 2 ;;
   esac
@@ -36,6 +39,7 @@ SKILLS_DIR="$REPO_ROOT/skills"
 
 AGENTS_HOME="${AGENTS_HOME:-$HOME/.agents}"
 CLAUDE_HOME="${CLAUDE_HOME:-$HOME/.claude}"
+ANTIGRAVITY_HOME="${ANTIGRAVITY_HOME:-$HOME/.gemini/config}"
 
 log()  { printf '%s\n' "$*"; }
 warn() { printf 'warning: %s\n' "$*" >&2; }
@@ -72,6 +76,13 @@ log "Codex + OpenCode (shared ~/.agents/skills):"
 mkdir -p "$AGENTS_HOME"
 link "$SKILLS_DIR" "$AGENTS_HOME/skills"
 
+log "Antigravity (~/.gemini/config/skills):"
+if [ -d "$ANTIGRAVITY_HOME" ]; then
+  link "$SKILLS_DIR" "$ANTIGRAVITY_HOME/skills"
+else
+  warn "no $ANTIGRAVITY_HOME; skipping Antigravity"
+fi
+
 log "Claude Code (per-skill symlinks):"
 if [ -d "$CLAUDE_HOME" ]; then
   mkdir -p "$CLAUDE_HOME/skills"
@@ -100,6 +111,7 @@ fi
 #   agents/<name>/claude.md   -> ~/.claude/agents/<name>.md
 #   agents/<name>/opencode.md -> ~/.config/opencode/agents/<name>.md
 #   agents/<name>/codex.toml  -> ~/.codex/agents/<name>.toml
+#   agents/<name>/antigravity.md -> ~/.gemini/config/agents/<name>.md
 
 AGENTS_SRC="$REPO_ROOT/agents"
 OPENCODE_HOME="${OPENCODE_HOME:-$HOME/.config/opencode}"
@@ -136,6 +148,7 @@ link_agents() {
 link_agents "Claude Code" "$CLAUDE_HOME"   claude.md   md
 link_agents "OpenCode"    "$OPENCODE_HOME" opencode.md md
 link_agents "Codex"       "$CODEX_HOME"    codex.toml  toml
+link_agents "Antigravity" "$ANTIGRAVITY_HOME" antigravity.md md
 
 # --- OpenCode commands ------------------------------------------------------
 # Claude Code and Codex let you invoke a skill by name. OpenCode's slash
@@ -165,10 +178,11 @@ else
 fi
 
 # --- Policy (opt-in) --------------------------------------------------------
-# One always-on instruction file for all three platforms. Opt-in because it is
+# One always-on instruction file for all four platforms. Opt-in because it is
 # specific to a controller/worker setup (Crabbox, cbrun, HPC handoff).
 #
-#   Codex, OpenCode: their global AGENTS.md becomes a symlink to the policy.
+#   Codex, OpenCode, Antigravity: their global AGENTS.md becomes a symlink to
+#                    the policy.
 #   Claude Code:     ~/.claude/CLAUDE.md gets an @import line, so any other
 #                    content you keep in CLAUDE.md is left alone.
 
@@ -180,6 +194,7 @@ if [ "$WITH_POLICY" = 1 ]; then
 
   [ -d "$CODEX_HOME" ]    && link "$POLICY" "$CODEX_HOME/AGENTS.md"
   [ -d "$OPENCODE_HOME" ] && link "$POLICY" "$OPENCODE_HOME/AGENTS.md"
+  [ -d "$ANTIGRAVITY_HOME" ] && link "$POLICY" "$ANTIGRAVITY_HOME/AGENTS.md"
 
   if [ -d "$CLAUDE_HOME" ]; then
     claude_md="$CLAUDE_HOME/CLAUDE.md"
