@@ -7,6 +7,8 @@ description: Present a proposed plan with several real decisions in a local HTML
 
 Use this for several decisions that can change a proposed plan. For one question, ask in the conversation. The page is a review surface; the final implementation plan must still follow the `planning` skill.
 
+This skill is based on [Fluidplan](https://github.com/morganhub/fluidplan) by morganhub (MIT licence). Its workflow of decision cards that a person answers in rounds, ending in a `DECISIONS.md` file, is the model for this one. The page styles and fonts in `assets/fluidplan/` are copied from it; see the `README.md` and `LICENSE` there. The CLI, server and review page were written for this repository and do less than Fluidplan's own app.
+
 Run the bundled CLI from the project root with `node ~/.agents/skills/plan-review/scripts/plan-review.mjs`. Node 20 or later is required. If the shared install path is unavailable, locate this skill's `scripts/plan-review.mjs` beside this file.
 
 1. Inspect the request, any source plan, and relevant project files. Identify decisions the person can genuinely make. Write plain language about the consequence of each option.
