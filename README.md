@@ -219,6 +219,19 @@ If you used `--with-policy`, also delete the `@…/execution-policy.md` line fro
 
 </details>
 
+## Credits
+
+`plan-review` is based on [Fluidplan](https://github.com/morganhub/fluidplan)
+by morganhub (MIT licence). Fluidplan's idea of turning a plan into decision
+cards that you answer in rounds is the model for the workflow. The page styles
+and fonts in
+[`skills/plan-review/assets/fluidplan`](skills/plan-review/assets/fluidplan) are
+copied from it, with its licence. The CLI, server and review page were written
+for this repository and do less than Fluidplan's own app, so try Fluidplan
+itself if you want the full version.
+
 ## Licence
 
-MIT — see [`LICENSE`](LICENSE).
+MIT — see [`LICENSE`](LICENSE). The files in
+`skills/plan-review/assets/fluidplan` keep their own licences: MIT for the
+styles (© morganhub) and the SIL Open Font License for the Geist fonts.
