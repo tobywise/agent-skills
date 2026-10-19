@@ -162,7 +162,7 @@ export async function renderOverview(files, { live, root = process.cwd() }) {
     const links = plan.sections.map((section) => navLink(`#${section.id}`, SECTION_ICONS[section.kind] ?? "file", section.title));
     if (plan.coverage.length) links.unshift(navLink(`#${plan.id}-coverage`, "coverage", "Contract coverage"));
     return `
-      <div class="nav-group">
+      <div class="nav-group" data-plan="${plan.id}"${plan === plans[0] ? "" : " hidden"}>
         <a class="nav-label overview-plan-link" href="#${plan.id}">${escapeHtml(plan.title)}</a>
         ${links.join("\n        ")}
       </div>`;
@@ -179,7 +179,7 @@ export async function renderOverview(files, { live, root = process.cwd() }) {
         </section>`).join("");
     const position = plans.length > 1 ? `Plan ${index + 1} of ${plans.length} · ` : "";
     return `
-      <article class="page overview-plan" id="${plan.id}">
+      <article class="page overview-plan" id="${plan.id}" data-plan="${plan.id}" data-title="${escapeHtml(plan.title)}"${index ? " hidden" : ""}>
         <header class="page-header">
           <div class="kicker">${position}<span class="mono">${escapeHtml(plan.shownPath)}</span> · changed ${escapeHtml(plan.changed.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" }))}</div>
           <h1>${escapeHtml(plan.title)}</h1>
@@ -189,6 +189,12 @@ export async function renderOverview(files, { live, root = process.cwd() }) {
       </article>`;
   }).join("");
 
+  // Several plans get one tab each. The first shows until the person picks
+  // another; the page script then shows the plan named in the address.
+  const tabs = plans.length < 2 ? "" : `
+        <nav class="tabs-list overview-tabs" role="tablist" aria-label="Plans">${plans.map((plan, index) => `
+          <a class="tabs-trigger" role="tab" href="#${plan.id}" data-plan="${plan.id}" aria-selected="${index === 0}"><span class="count">${index + 1}</span>${escapeHtml(plan.title)}${plan.counts.unproved ? `<span class="overview-tab-alert" title="A contract has no acceptance item">${icon("alert")}</span>` : ""}</a>`).join("")}
+        </nav>`;
   const state = live ? "● Live: updates when the plan changes" : "Saved copy";
   return `<!doctype html>
 <html lang="en">
@@ -212,13 +218,13 @@ export async function renderOverview(files, { live, root = process.cwd() }) {
     <main class="main-col">
       <header class="topbar">
         <button type="button" class="btn btn-ghost btn-icon menu-button" id="menu" aria-label="Open menu">${icon("menu")}</button>
-        <div class="crumbs"><span>Plan overview</span><span class="crumb-sep">/</span><span class="crumb-current">${escapeHtml(heading)}</span></div>
+        <div class="crumbs"><span>Plan overview</span><span class="crumb-sep">/</span><span class="crumb-current" id="crumb">${escapeHtml(plans[0].title)}</span></div>
         <div class="topbar-right">
           <span class="save-state" id="live-state">${state}</span>
           <button type="button" class="btn btn-ghost btn-icon" id="theme" aria-label="Switch light or dark theme">${icon("theme")}</button>
         </div>
       </header>
-      <div class="content-wrap"><div class="content">${articles}
+      <div class="content-wrap"><div class="content">${tabs}${articles}
       </div></div>
     </main>
   </div>
@@ -237,6 +243,28 @@ export async function renderOverview(files, { live, root = process.cwd() }) {
     document.getElementById("menu").addEventListener("click", () => app.classList.toggle("review-sidebar-open"));
     document.getElementById("scrim").addEventListener("click", () => app.classList.remove("review-sidebar-open"));
     for (const link of document.querySelectorAll(".sidebar a")) link.addEventListener("click", () => app.classList.remove("review-sidebar-open"));
+    // With several plans, show only the plan named at the start of the
+    // address (#p2, or #p2-scope for a section of it), the first by default.
+    const planIds = [...document.querySelectorAll("article[data-plan]")].map((item) => item.dataset.plan);
+    function showPlan(scroll = true) {
+      if (planIds.length < 2) return;
+      const wanted = location.hash.match(/^#(p\\d+)/)?.[1];
+      const active = planIds.includes(wanted) ? wanted : planIds[0];
+      for (const item of document.querySelectorAll("[data-plan]")) {
+        if (item.classList.contains("tabs-trigger")) item.setAttribute("aria-selected", String(item.dataset.plan === active));
+        else item.hidden = item.dataset.plan !== active;
+      }
+      const article = document.getElementById(active);
+      document.getElementById("crumb").textContent = article.dataset.title;
+      // The browser cannot scroll to a section while its plan is hidden.
+      if (!scroll) return;
+      const target = location.hash.length > 1 ? document.getElementById(location.hash.slice(1)) : null;
+      if (target && target !== article) target.scrollIntoView();
+      else window.scrollTo(0, 0);
+    }
+    addEventListener("hashchange", () => showPlan());
+    // After an automatic reload, keep the place the person was reading.
+    showPlan(performance.getEntriesByType("navigation")[0]?.type !== "reload");
     // A served page asks every few seconds whether a plan file changed, and
     // reloads when one did. If the server has stopped, it says so.
     const version = document.body.dataset.version;

@@ -1,5 +1,8 @@
 /* Plan overview: a rendered Markdown plan inside Fluidplan's cards. */
-.overview-plan + .overview-plan { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+.overview-tabs { margin-bottom: 1.5rem; }
+.overview-tabs .tabs-trigger { text-decoration: none; }
+.overview-tabs .count { display: grid; place-items: center; width: 1.125rem; height: 1.125rem; border: 1px solid var(--input); border-radius: 50%; }
+.overview-tab-alert { display: inline-flex; color: var(--warning); }
 .overview-plan-link { text-decoration: none; }
 .overview-plan-link:hover { color: var(--sidebar-foreground); }
 .overview-section { scroll-margin-top: calc(var(--header-height) + 1rem); }

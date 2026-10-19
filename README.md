@@ -45,8 +45,8 @@ it by name in Codex. Agents also load skills themselves when a task matches.
 Every finished plan also opens as a read-only HTML overview in your browser. It
 shows the review standard, which acceptance items prove each contract, and the
 plan itself, with linked `C-` and `AC-` IDs, coloured `diff` examples, and any
-SVG diagrams or charts the planning agent drew. It reloads when the plan
-changes. When the machine runs Tailscale, you also get an address for your
+SVG diagrams or charts the planning agent drew. Plans written together
+appear as tabs on one page. It reloads when a plan changes. When the machine runs Tailscale, you also get an address for your
 other devices on the tailnet.
 
 | Review | |

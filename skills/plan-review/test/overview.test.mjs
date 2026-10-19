@@ -51,8 +51,10 @@ async function withPlan(run) {
   const folder = await mkdtemp(path.join(os.tmpdir(), "plan-overview-test-"));
   try {
     const file = path.join(folder, "reminder-emails.md");
+    const second = path.join(folder, "reminder-report.md");
     await writeFile(file, PLAN);
-    await run(file);
+    await writeFile(second, "# Reminder report\n\n## Summary\n\nReview standard: `GENERAL`\n");
+    await run(file, second);
   } finally {
     await rm(folder, { recursive: true, force: true });
   }
@@ -127,5 +129,51 @@ test("overview server requires its token and local host, and reports plan change
     } finally {
       await new Promise((resolve) => server.close(resolve));
     }
+  });
+});
+
+test("several plans show one at a time, chosen by the page address", async () => {
+  // Tab switching runs in the browser, so run the page script against a
+  // small stand-in for the page: one tab, sidebar group, and article per plan.
+  await withPlan(async (file, second) => {
+    const html = await renderOverview([file, second], { live: false });
+    const script = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)][0][1];
+    const elements = [...html.matchAll(/<(a|div|article) class="([^"]*)"[^>]*data-plan="(p\d)"(?: data-title="([^"]*)")?[^>]*>/g)].map(([tag, , classes, plan, title]) => ({
+      tag, hidden: tag.includes(" hidden"), attributes: {}, dataset: { plan, title },
+      classList: { contains: (name) => classes.split(" ").includes(name) },
+      setAttribute(name, value) { this.attributes[name] = value; },
+    }));
+    assert.equal(elements.length, 6);
+    const crumb = { textContent: "" };
+    const section = { scrolled: false, scrollIntoView() { this.scrolled = true; } };
+    const listeners = {};
+    const quiet = { addEventListener() {}, classList: { toggle() {}, remove() {} } };
+    const location = { hash: "#p2-summary", pathname: "/" };
+    const context = vm.createContext({
+      document: {
+        documentElement: { dataset: {} },
+        body: { dataset: {} },
+        getElementById: (id) => ({ crumb, "p2-summary": section })[id] ?? elements.find((item) => item.tag.startsWith("<article") && item.dataset.plan === id) ?? quiet,
+        querySelectorAll: (selector) => selector === "article[data-plan]" ? elements.filter((item) => item.tag.startsWith("<article")) : selector === "[data-plan]" ? elements : [],
+      },
+      location,
+      localStorage: { getItem() { return null; }, setItem() {} },
+      matchMedia: () => ({ matches: false }),
+      performance: { getEntriesByType: () => [{ type: "navigate" }] },
+      window: { scrollTo() {} },
+      addEventListener: (name, listener) => { listeners[name] = listener; },
+    });
+    vm.runInContext(script, context);
+    const shown = () => elements.filter((item) => !item.classList.contains("tabs-trigger") && !item.hidden).map((item) => item.dataset.plan);
+    const selected = () => elements.filter((item) => item.attributes["aria-selected"] === "true").map((item) => item.dataset.plan);
+    assert.deepEqual(shown(), ["p2", "p2"]);
+    assert.deepEqual(selected(), ["p2"]);
+    assert.equal(crumb.textContent, "Reminder report");
+    assert.ok(section.scrolled);
+    location.hash = "#p1";
+    listeners.hashchange();
+    assert.deepEqual(shown(), ["p1", "p1"]);
+    assert.deepEqual(selected(), ["p1"]);
+    assert.equal(crumb.textContent, "Reminder emails");
   });
 });
