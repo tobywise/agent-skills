@@ -9,16 +9,27 @@ const htmlFile = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 const assetFolder = path.dirname(htmlFile);
 const BODY_LIMIT = 64 * 1024;
 
-async function readPage() {
-  const [template, sans, mono, ...styles] = await Promise.all([
-    readFile(htmlFile, "utf8"),
+/**
+ * Read the page styles, with the fonts embedded, so a page needs no other file.
+ *
+ * @param {string[]} extra Style files in the assets folder to add after the
+ *   shared styles.
+ * @returns {Promise<string>} The CSS for a `<style>` element.
+ */
+export async function readStyles(extra = []) {
+  const [sans, mono, ...styles] = await Promise.all([
     readFile(path.join(assetFolder, "fluidplan/geist-latin-wght-normal.woff2")),
     readFile(path.join(assetFolder, "fluidplan/geist-mono-latin-wght-normal.woff2")),
     ...["tokens.css", "base.css", "components.css", "app.css"].map(name => readFile(path.join(assetFolder, "fluidplan", name), "utf8")),
-    readFile(path.join(assetFolder, "review.css"), "utf8"),
+    ...["review.css", ...extra].map(name => readFile(path.join(assetFolder, name), "utf8")),
   ]);
   const fonts = `@font-face{font-family:"Geist Variable";src:url(data:font/woff2;base64,${sans.toString("base64")}) format("woff2");font-weight:100 900;font-display:swap}\n@font-face{font-family:"Geist Mono Variable";src:url(data:font/woff2;base64,${mono.toString("base64")}) format("woff2");font-weight:100 900;font-display:swap}`;
-  return template.replace("__STYLE__", [fonts, ...styles].join("\n"));
+  return [fonts, ...styles].join("\n");
+}
+
+async function readPage() {
+  const [template, styles] = await Promise.all([readFile(htmlFile, "utf8"), readStyles()]);
+  return template.replace("__STYLE__", styles);
 }
 
 export function embedData(html, data) {
@@ -95,7 +106,7 @@ async function readBody(request) {
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 }
 
-function respond(response, status, value, type) {
+export function respond(response, status, value, type) {
   if (response.headersSent) return;
   const body = typeof value === "string" ? value : JSON.stringify(value);
   response.writeHead(status, {

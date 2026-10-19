@@ -13,4 +13,5 @@ already given an explicit, coherent split, propose numbered vertical slices and
 get approval before writing any file. Every plan must meet the full `planning`
 format on its own.
 
-Return only the plan paths, in order, and a short summary.
+Return only the plan paths, in order, the overview addresses from `planning`,
+and a short summary.

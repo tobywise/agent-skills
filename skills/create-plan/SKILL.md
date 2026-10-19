@@ -15,4 +15,5 @@ user supplied.
 - If the user asks to revise an existing plan, follow `planning`'s revising
   rules and revise the plan in place.
 
-Return only the plan path and a short summary.
+Return only the plan path, the overview addresses from `planning`, and a short
+summary.

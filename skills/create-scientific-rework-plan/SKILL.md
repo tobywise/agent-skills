@@ -53,4 +53,5 @@ unsupported-use UX. If a coherent safe rework exceeds the single-use tripwires,
 recommend an approved vertical split through `/create-multiple-plans` and stop
 instead of forcing one oversized plan.
 
-After writing, return only the created plan path and one concise summary.
+After writing, start the overview that `planning` describes. Return only the
+created plan path, the overview addresses, and one concise summary.

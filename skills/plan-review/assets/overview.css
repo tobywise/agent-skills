@@ -1,0 +1,58 @@
+/* Plan overview: a rendered Markdown plan inside Fluidplan's cards. */
+.overview-plan + .overview-plan { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+.overview-plan-link { text-decoration: none; }
+.overview-plan-link:hover { color: var(--sidebar-foreground); }
+.overview-section { scroll-margin-top: calc(var(--header-height) + 1rem); }
+.overview-title { display: flex; align-items: center; gap: .5rem; }
+.overview-title > .icon { color: var(--muted-foreground); }
+.overview-section[data-kind="contracts"] .overview-title > .icon,
+.overview-section[data-kind="coverage"] .overview-title > .icon { color: var(--info); }
+.overview-section[data-kind="acceptance-checklist"] .overview-title > .icon { color: var(--success); }
+.overview-section[data-kind="forbidden-patterns"] .overview-title > .icon { color: var(--destructive); }
+.overview-body { gap: .75rem; font-size: .9375rem; line-height: 1.6; overflow-wrap: anywhere; }
+.overview-body > * { margin: 0; }
+.overview-body h3 { font-size: 1rem; margin-top: .5rem; }
+.overview-body h4, .overview-body h5, .overview-body h6 { font-size: .9375rem; }
+.overview-body ul, .overview-body ol { padding-left: 1.5rem; }
+.overview-body li > ul, .overview-body li > ol, .overview-body li > p + p { margin-top: .375rem; }
+.overview-body li.plan-task { list-style: none; margin-left: -1.25rem; }
+.overview-body blockquote { margin: 0; padding-left: 1rem; border-left: 3px solid var(--border); color: var(--muted-foreground); }
+.overview-body hr { margin: .5rem 0; }
+.overview-body .table { font-size: .875rem; line-height: 1.5; }
+.overview-body .table th { white-space: normal; background: color-mix(in oklab, var(--muted) 60%, transparent); }
+.overview-body .table td:first-child { white-space: nowrap; }
+.overview-body .align-center { text-align: center; }
+.overview-body .align-right { text-align: right; }
+.overview-body .badge { vertical-align: baseline; font-size: .75rem; padding: 0 .375rem; }
+.overview-body :target { background: color-mix(in oklab, var(--info) 14%, transparent); border-radius: var(--radius-sm); }
+.overview-proof { display: flex; flex-wrap: wrap; gap: .25rem; }
+.plan-ref { text-decoration: none; }
+.plan-ref:hover { border-color: var(--ring); background: var(--accent); }
+.plan-file-link { border-bottom: 1px dotted var(--muted-foreground); }
+.overview-plan .kicker { overflow-wrap: anywhere; }
+.overview-plan .home-badges .badge b { font-weight: 600; margin-left: .25rem; }
+
+/* Implementation steps: numbered circles joined by a line, read top to bottom. */
+.overview-section[data-kind="implementation-steps"] .overview-body > ol { counter-reset: step; list-style: none; padding-left: 0; }
+.overview-section[data-kind="implementation-steps"] .overview-body > ol > li { counter-increment: step; position: relative; padding: 0 0 .875rem 2.5rem; margin: 0; }
+.overview-section[data-kind="implementation-steps"] .overview-body > ol > li::before {
+  content: counter(step); position: absolute; left: 0; top: 0; display: grid; place-items: center;
+  width: 1.75rem; height: 1.75rem; border-radius: 50%; background: var(--primary); color: var(--primary-foreground);
+  font-size: .8125rem; font-weight: 600;
+}
+.overview-section[data-kind="implementation-steps"] .overview-body > ol > li:not(:last-child)::after {
+  content: ""; position: absolute; left: .8125rem; top: 2rem; bottom: .25rem; width: 2px; background: var(--border);
+}
+
+/* Drawings sit on a white panel, so dark lines stay readable in the dark theme. */
+.overview-figure { margin: 0; display: grid; gap: .5rem; justify-items: center; }
+.overview-figure img { width: 100%; max-width: 44rem; height: auto; padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius-lg); background: #fff; }
+.overview-figure figcaption { color: var(--muted-foreground); font-size: .8125rem; text-align: center; }
+
+/* Diff examples: added lines green, removed lines red, as in a code review. */
+.overview-diff code { display: block; padding: 0; }
+.overview-diff .diff-line { display: block; padding: 0 .5rem; margin: 0 -.5rem; white-space: pre; }
+.overview-diff .diff-add { background: color-mix(in oklab, var(--success) 16%, transparent); }
+.overview-diff .diff-remove { background: color-mix(in oklab, var(--destructive) 14%, transparent); }
+.overview-diff .diff-hunk { color: var(--info); }
+.overview-diff .diff-file { color: var(--muted-foreground); font-weight: 600; }

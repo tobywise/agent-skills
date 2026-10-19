@@ -26,7 +26,7 @@ Restart each platform afterwards. Re-run the installer after a `git pull` or
 after adding or removing anything. It only creates, updates or prunes its own
 symlinks, plus one import line in `~/.claude/CLAUDE.md` with `--with-policy`.
 
-Needs `bash` and `git`, plus Node.js 20 or later for `plan-review` and `node` for `langsmith-review`. On macOS, install
+Needs `bash` and `git`, plus Node.js 20 or later for `plan-review` and the plan overview, and `node` for `langsmith-review`. On macOS, install
 GNU `findutils` and a current `bash`.
 
 ## Skills
@@ -41,6 +41,13 @@ it by name in Codex. Agents also load skills themselves when a task matches.
 | `create-multiple-plans` | Split large work into ordered, independently useful plans |
 | `orchestrate` | Carry a plan through implement → review → verify from the main session |
 | `run-checks` | Run the relevant tests while iterating and the full suite at the end, locally or on remote workers |
+
+Every finished plan also opens as a read-only HTML overview in your browser. It
+shows the review standard, which acceptance items prove each contract, and the
+plan itself, with linked `C-` and `AC-` IDs, coloured `diff` examples, and any
+SVG diagrams or charts the planning agent drew. It reloads when the plan
+changes. When the machine runs Tailscale, you also get an address for your
+other devices on the tailnet.
 
 | Review | |
 |---|---|
@@ -62,7 +69,7 @@ inspect existing test evidence; running tests requires explicit approval for tha
 
 | Other | |
 |---|---|
-| `planning` | The shared plan format the other plan skills use |
+| `planning` | The shared plan format the other plan skills use, and the HTML overview of each finished plan |
 | `slide-deck` | A navigable HTML slide deck explaining a topic |
 | `langsmith-review`, `debrief` | Inspect or debrief agent runs from LangSmith traces* |
 

@@ -34,18 +34,31 @@ To change an existing plan, revise that file in place (see
 1. **Summary** — the goal, the review standard, and the main risk.
 2. **Scope** — allowed and forbidden paths, non-goals, entrypoints, analogous
    paths that must behave the same way, and the supported use and access.
-3. **Contracts** — numbered `C-01`, `C-02`, … Each states required behaviour
-   precisely and the proof that establishes it: a positive check, plus a
-   negative check where a plausible mistake could otherwise pass unnoticed.
+3. **Contracts** — a table with one row per contract, numbered `C-01`,
+   `C-02`, … Columns: `ID`, `Requirement` (the required behaviour, stated
+   precisely), `Positive check` (the proof that establishes it), and
+   `Negative check` (the check that catches a plausible mistake that could
+   otherwise pass unnoticed, or `—` when there is none).
 4. **Tests and verification** — see below.
 5. **Implementation steps** — an ordered outline, not code.
 6. **Forbidden patterns** — shortcuts the implementer must not take, such as
    stubs, shims, catch-and-warn, or a second source of truth.
 7. **Complexity budget** — see below.
-8. **Acceptance checklist** — numbered `AC-01`, `AC-02`, … Each item maps a
-   behaviour to its paths, its proof, and the shortcuts it rules out. The
-   implementer works through this list and the reviewer checks it item by item,
-   so every item must be independently checkable.
+8. **Acceptance checklist** — a table with one row per item, numbered
+   `AC-01`, `AC-02`, … Columns: `ID`, `Behaviour` (naming the contracts it
+   proves, such as `(C-01)`), `Paths`, `Proof`, and `Rules out` (the shortcuts
+   it rules out). The implementer works through this list and the reviewer
+   checks it item by item, so every item must be independently checkable.
+
+Keep each table cell to one or two sentences. When a contract or item needs
+more, add a short paragraph under the table that starts with its ID.
+
+Add illustrations where a picture explains the plan faster than prose: a
+before-and-after `diff`, a call diagram, a data-flow graph, or a sketch of a
+threshold or expected result. Read
+[`references/illustrations.md`](references/illustrations.md) before adding
+one. Illustrations explain; the contracts decide. An illustration that
+disagrees with a contract is a plan defect.
 
 ## Tests and verification
 
@@ -109,13 +122,14 @@ Under `SCIENTIFIC_ANALYSIS`, also:
 - declare `Delivery profile` and `Validation` as defined in
   `scientific-analysis`;
 - tier every acceptance item `IMPLEMENTATION`, `INTERPRETATION`, or
-  `DEFERRED`. Vague adequacy goals are `INTERPRETATION` and stay out of failing
-  checks. Never invent adequacy thresholds;
+  `DEFERRED` in a `Tier` column. Vague adequacy goals are `INTERPRETATION`
+  and stay out of failing checks. Never invent adequacy thresholds;
 - mark every defensive contract `DIRECT` (it protects correctness, fail-fast,
   or scientific validity) or `CONTINGENT` (it guards against something that
-  might happen). `DIRECT` requirements are always full contracts. For
-  `SINGLE_USE`, a `CONTINGENT` concern that is not both plausibly reachable in
-  supported use and serious goes in an advisory section, not a contract;
+  might happen) in a `Kind` column. `DIRECT` requirements are always full
+  contracts. For `SINGLE_USE`, a `CONTINGENT` concern that is not both
+  plausibly reachable in supported use and serious goes in an advisory
+  section, not a contract;
 - never weaken the scientific fail-fast policy.
 
 ## Several plans
@@ -154,4 +168,28 @@ edit the plan file itself, so there is always one current plan.
 
 ## After writing
 
-Return the plan path, or paths, and a one-paragraph summary.
+Show the finished plans to the person as an HTML overview. From the project
+root, run this in the background, with every plan path in reading order:
+
+```sh
+node ~/.agents/skills/plan-review/scripts/plan-overview.mjs <plan.md> [<plan.md> ...]
+```
+
+- It prints a `Local:` address and, on a machine running Tailscale, a
+  `Tailnet:` address that the person's other devices can open. Give the person
+  both.
+- Keep it running: give the command the longest background time limit your
+  tool allows. The page reloads itself when a plan file changes, so after a
+  revision, give the address of the overview that already shows that plan if
+  it is still running.
+- Fix every `Warning:` it prints; each one names a drawing the page cannot
+  show.
+- If the person cannot open either address, run it again with `--file` before
+  the plan paths, and give them the HTML file it prints.
+- The `Tailnet:` address opens the plan to the person's tailnet. If your
+  permissions ask for approval to run it, ask the person; use no other route.
+- A subagent hands back its plan paths instead. The session that talks to the
+  person starts the overview.
+
+Return the plan path, or paths, the overview addresses, and a one-paragraph
+summary.
