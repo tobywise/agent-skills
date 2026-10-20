@@ -51,6 +51,15 @@
   End the issue with the matching `state=success` command so the user can clear it when done. A status belongs to one commit: after a push that could change the step's result, set it to pending again on the new head and comment on the issue that the step must be redone.
 - Subagents list such steps in their hand-over. The coordinating session opens the issues and links them in its final report.
 
+## Next steps for the user
+
+- When a status update leaves two or more items for the user (pull requests, proposed issues, `needs-human` steps, decisions), end it with a table that ranks them by how much work each one unblocks, most first.
+
+  | # | Item | Your action | Unblocks |
+  |---|------|-------------|----------|
+  | 1 | PR #12 | Review and merge | PR #14; plan 3 |
+  | 2 | Issue #18 (`needs-human`) | Run the HPC fit | Merge of PR #14 |
+
 ## Plain language
 
 - Readers are scientists, not software engineers. Write everything a person reads in plain English (ISO 24495-1): docs, comments, docstrings, messages, and the names of functions, variables, and files.

@@ -74,4 +74,6 @@ load `review-implementation` or `scientific-risk-review` for those steps.
 
 Summarise what was built, the final review decision, the exact verification
 commands and their results, anything unverified or accepted, open
-questions, any proposed issues, and any `needs-human` issues opened.
+questions, any proposed issues, and any `needs-human` issues opened. If two
+or more items need the user, end with a table that ranks them by how much work
+each one unblocks.
