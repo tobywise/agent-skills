@@ -39,8 +39,10 @@
 
 ## Issues for problems found along the way
 
-- When you notice a problem outside the task's scope, leave it unfixed and note it as a candidate GitHub issue. Problems inside the scope are still part of the work.
-- Subagents list candidate issues in their hand-over. The coordinating session checks open issues for duplicates, then proposes the rest in its final report, each with a title and evidence, and opens only those the user approves.
+- When you notice a problem outside the task's scope, leave it unfixed. Problems inside the scope are still part of the work.
+- Rate each out-of-scope problem with the severity and likelihood scales in the `review-implementation` skill's `references/ratings.md`, as you would a review finding: name the trigger and give a short reason based on evidence.
+- A problem becomes a candidate GitHub issue only at severity 2 or higher and likelihood 2 or higher. Let the others go unrecorded, unless a stated project requirement makes them relevant. Rate UNKNOWN only when you can name the missing fact. A scientific validity failure keeps its full rating, as the fail-fast rules require.
+- Subagents list candidate issues in their hand-over, each with its ratings and reason. The coordinating session checks open issues for duplicates and checks the ratings again. It then proposes the rest in its final report, ranked by severity and then likelihood, each with a title, ratings, and evidence, and opens only those the user approves.
 
 ## Steps only the user can do
 

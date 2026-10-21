@@ -1,6 +1,8 @@
 # Review severity and likelihood
 
-Use these ratings for every reported finding and possible risk. Rate the
+Use these ratings for every reported finding and possible risk, and for
+problems outside a task's scope that could become GitHub issues (the
+execution policy sets the bar for proposing those). Rate the
 consequence **if it occurs** separately from the chance that its trigger will
 occur in supported use. Base both ratings on the plan, code, and observed
 behavior. They are ordered judgments, not numerical probabilities; give a
